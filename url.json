@@ -1,0 +1,29 @@
+{
+  "prj": "user.js",
+  "down": [
+    {
+      "name": "FastGithub 镜像加速访问、克隆和下载",
+      "url": "https://greasyfork.org/scripts/412245-github-增强-高速下载/code/Github 增强 - 高速下载.user.js"
+    },
+    {
+      "name": "自动展开",
+      "url": "https://greasyfork.org/scripts/438656-自动展开/code/自动展开.user.js"
+    },
+    {
+      "name": "百度系优化",
+      "url": "https://greasyfork.org/scripts/418349-移动端-百度系优化/code/【移动端】-百度系优化.user.js"
+    },
+    {
+      "name": "搜索屏蔽广告",
+      "url": "https://greasyfork.org/scripts/460743-屏蔽广告-屏蔽谷歌广告-百度广告-知乎广告-隐藏谷歌和百度搜索增强百度搜索结果的各种广告等等-过滤所有采用谷歌联盟和百度联盟等广告联盟的广告/code/【屏蔽广告】屏蔽谷歌广告、百度广告、知乎广告、隐藏谷歌和百度搜索增强百度搜索结果的各种广告等等（过滤所有采用谷歌联盟和百度联盟等广告联盟的广告）.user.js"
+    },
+    {
+      "name": "骚扰拦截",
+      "url": "https://greasyfork.org/scripts/440871-骚扰拦截/code/骚扰拦截.user.js"
+    },
+    {
+      "name": "俺的手机视频脚本",
+      "url": "https://greasyfork.org/scripts/456542-俺的手机视频脚本/code/俺的手机视频脚本.user.js"
+    }
+  ]
+}
