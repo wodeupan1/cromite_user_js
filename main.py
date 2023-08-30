@@ -16,5 +16,3 @@ for url in url_list['down']:
     r = requests.get(url['url'])
     with open('js/' + url['name'], 'wb') as f:
         f.write(r.content)
-            except:
-                pass
