@@ -14,5 +14,5 @@ with open('url.json', 'r', encoding='utf-8') as f:
 # 遍历url_list，下载"url"对应的文件到js目录下
 for url in url_list['down']:
     r = requests.get(url['url'])
-    with open('js/' + url['name'], 'wb') as f:
+    with open('js/' + url['name'] + 'user.js', 'wb') as f:
         f.write(r.content)
