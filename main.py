@@ -3,6 +3,7 @@ import os
 import datetime
 import time
 import json
+import re
 
 # 设置脚本所在目录为工作目录
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -11,22 +12,17 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 with open('url.json', 'r', encoding='utf-8') as f:
     url_list = json.load(f)
 
-def modify_run_at(response):
-    # response is a requests response object
-    # check if the response content contains "@run-at document-body"
-    if b"@run-at       document-start" in response.content:
-        # replace it with "@run-at document-end"
-        new_content = response.content.replace(b"@run-at document-body", b"@run-at document-end")
-        # return the modified content
-        return new_content
-    else:
-        # skip the modification
-        return response.content
+def modify(response):
+    pattern1 = rb"\*://\*[a-zA-Z]+\."
+    pattern2 = rb"@run-at\s+document-body"
+    mid_content = re.sub(pattern1, rb"*://*.\g<1>.", response.content)
+    new_content = re.sub(pattern, rb"@run-at\g<1>document-end", mid_content)
+    return new_content
 
 
 # 遍历url_list，下载"url"对应的文件到js目录下
 for url in url_list['down']:
     r = requests.get(url['url'])
-    f = modify_run_at(r)
+    f = modify(r)
     with open('js/' + url['name'] + 'user.js', 'wb') as f:
         f.write(f)
