@@ -26,3 +26,4 @@ for url in url_list['down']:
     o = modify(r)
     with open('js/' + url['name'] + 'user.js', 'wb') as f:
         f.write(o)
+        f.close()
