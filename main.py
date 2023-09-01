@@ -14,11 +14,11 @@ with open('url.json', 'r', encoding='utf-8') as f:
 
 def modify(response):
     pattern1 = rb"\*:\/\/\*(?=[a-zA-Z0-9_-]+\.)"
-    pattern2 = rb"(?<=\sdocument-)body"
-    pattern3 = rb"(?<=\.\w{2,})(?<!/)\*(?=\n)"
+    pattern3 = rb"(?<=\sdocument-)body"
+    pattern2 = rb"(?<=\.\w{2,})(?<!/)\*(?=\n)"
     mid = regex.sub(pattern1, rb"*://*.", response.content)
-    mid2 = regex.sub(pattern2, rb"/*", mid)
-    new_content = regex.sub(pattern3, rb"end", mid2)
+    mid2 = regex.sub(pattern3, rb"/*", mid)
+    new_content = regex.sub(pattern2, rb"end", mid2)
     return new_content
 
 
