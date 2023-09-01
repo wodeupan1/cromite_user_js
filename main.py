@@ -15,7 +15,7 @@ with open('url.json', 'r', encoding='utf-8') as f:
 def modify(response):
     pattern1 = rb"\*:\/\/\*(?=[a-zA-Z0-9_-]+\.)"
     pattern2 = rb"(?<=\sdocument-)body"
-    pattern3 = rb"(?<=\.[a-zA-Z]+)\*"
+    pattern3 = rb"(?<=\.\w{2,})(?<!/)\*(?=\n)"
     mid = re.sub(pattern1, rb"*://*.", response.content)
     mid2 = re.sub(pattern2, rb"/*", mid)
     new_content = re.sub(pattern3, rb"end", mid2)
