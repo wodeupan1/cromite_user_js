@@ -17,8 +17,8 @@ def modify(response):
     pattern2 = rb"(?<=\sdocument-)body"
     pattern3 = rb"(?<=\.[a-zA-Z]+)\*"
     mid = re.sub(pattern1, rb"*://*.", response.content)
-    mid2 = re.sub(pattern1, rb"/*", mid)
-    new_content = re.sub(pattern2, rb"end", mid2)
+    mid2 = re.sub(pattern2, rb"/*", mid)
+    new_content = re.sub(pattern3, rb"end", mid2)
     return new_content
 
 
