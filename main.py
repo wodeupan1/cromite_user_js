@@ -3,7 +3,7 @@ import os
 import datetime
 import time
 import json
-import re
+import regex
 
 # 设置脚本所在目录为工作目录
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -16,9 +16,9 @@ def modify(response):
     pattern1 = rb"\*:\/\/\*(?=[a-zA-Z0-9_-]+\.)"
     pattern2 = rb"(?<=\sdocument-)body"
     pattern3 = rb"(?<=\.\w{2,})(?<!/)\*(?=\n)"
-    mid = re.sub(pattern1, rb"*://*.", response.content)
-    mid2 = re.sub(pattern2, rb"/*", mid)
-    new_content = re.sub(pattern3, rb"end", mid2)
+    mid = regex.sub(pattern1, rb"*://*.", response.content)
+    mid2 = regex.sub(pattern2, rb"/*", mid)
+    new_content = regex.sub(pattern3, rb"end", mid2)
     return new_content
 
 
