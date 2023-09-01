@@ -38,7 +38,7 @@
 // @match        *://3g.dxy.cn/*
 // @match        *://www.cn-healthcare.com/*
 // @match        *://space.bilibili.com/*/dynamic*
-// @match        *://t.bilibili.com*
+// @match        *://t.bilibili.comend
 // @match        *://www.bilibili.com/read/mobile*
 // @match        *://m.bilibili.com/opus/*
 // @match        *://weibo.com/ttarticle/p/show?id=*
