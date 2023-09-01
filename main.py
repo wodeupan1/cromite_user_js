@@ -16,7 +16,7 @@ def modify(response):
     pattern1 = rb"\*:\/\/\*(?=[a-zA-Z0-9_-]+\.)"
     pattern2 = rb"(?<=@run-at\s+document-)body"
     mid_content = re.sub(pattern1, rb"*://*.", response.content)
-    new_content = re.sub(pattern2, r"end", mid_content)
+    new_content = re.sub(pattern2, "end", mid_content)
     return new_content
 
 
