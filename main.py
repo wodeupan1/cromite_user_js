@@ -13,9 +13,9 @@ with open('url.json', 'r', encoding='utf-8') as f:
     url_list = json.load(f)
 
 def modify(response):
-    pattern1 = rb"\*://\*[a-zA-Z]+\."
+    pattern1 = rb"\*:\/\/\*(?=[a-zA-Z]+\.)"
     pattern2 = rb"@run-at\s+document-body"
-    mid_content = re.sub(pattern1, rb"*://*.\g<1>.", response.content)
+    mid_content = re.sub(pattern1, rb"*://*.", response.content)
     new_content = re.sub(pattern2, rb"@run-at\g<1>document-end", mid_content)
     return new_content
 
