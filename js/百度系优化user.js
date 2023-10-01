@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化
 // @supportURL   https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化/feedback
-// @version      2023.9.29.13.10
+// @version      2023.10.1.11
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】、【百度网盘】
 // @match        *://m.baidu.com/*
@@ -45,8 +45,8 @@
 // @grant        GM_info
 // @grant        unsafeWindow
 // @require      https://greasyfork.org/scripts/449471-viewer/code/Viewer.js?version=1249086
-// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1256917
-// @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1256298
+// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1258516
+// @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1258535
 // @run-at       document-start
 // ==/UserScript==
 
@@ -2535,8 +2535,8 @@
           let searchInput_HOME_Selector = "#index-kw";
           let searchBtn_HOME_Selector = "#index-bn";
           /* 顶部搜索输入框点击后的搜索建议 */
-          utils.waitNode(suggestListSelector).then((nodeList) => {
-            utils.mutationObserver(nodeList[0], {
+          utils.waitNode(suggestListSelector).then((element) => {
+            utils.mutationObserver(element, {
               callback: () => {
                 handleInputEvent.mutationObserverFunction(
                   suggestListBtnSelectorList
@@ -2546,8 +2546,8 @@
             });
           });
           /* 底部搜索输入框点击后的搜索建议 */
-          utils.waitNode(suggestList2Selector).then((nodeList) => {
-            utils.mutationObserver(nodeList[0], {
+          utils.waitNode(suggestList2Selector).then((element) => {
+            utils.mutationObserver(element, {
               callback: () => {
                 handleInputEvent.mutationObserverFunction(
                   suggestListBtn2SelectorList
@@ -2557,8 +2557,8 @@
             });
           });
           /* 百度主页的搜索输入框点击后的搜索建议 */
-          utils.waitNode(suggestList_HOME_Selector).then((nodeList) => {
-            utils.mutationObserver(nodeList[0], {
+          utils.waitNode(suggestList_HOME_Selector).then((element) => {
+            utils.mutationObserver(element, {
               callback: () => {
                 handleInputEvent.mutationObserverFunction(
                   suggestListBtn_HOME_SelectorList
@@ -3000,8 +3000,8 @@
           handleItemURL.removeAds,
           600
         );
-        utils.waitNode("div#page.search-page").then((nodeList) => {
-          utils.mutationObserver(nodeList[0], {
+        utils.waitNode("div#page.search-page").then((element) => {
+          utils.mutationObserver(element, {
             callback: async () => {
               await searchUpdateRealLink.run();
               removeAdsLockFunction.run();
@@ -3013,7 +3013,7 @@
           });
         });
         utils
-          .waitNode("style[class^='vsearch-sigma-style']")
+          .waitNodeList("style[class^='vsearch-sigma-style']")
           .then((nodeList) => {
             /* 这个style标签就是某些搜索置顶的卡片 */
             log.success(["删除sigma的CSS", nodeList]);
@@ -3126,8 +3126,12 @@
         /**
          * scroll事件触发 自动加载下一页的评论
          */
-        nextPageScrollEvent: async () => {
-          if (!utils.isNearBottom(tiebaCommentConfig.isNearBottomValue)) {
+        nextPageScrollEvent: async (event) => {
+          if (event.jsTrigger) {
+            /* js主动触发 */
+          } else if (
+            !utils.isNearBottom(tiebaCommentConfig.isNearBottomValue)
+          ) {
             return;
           }
           loadingView.setText("Loading...", true);
@@ -3188,8 +3192,12 @@
         /**
          * scroll事件触发 自动加载上一页的评论
          */
-        prevPageScrollEvent: async () => {
-          if (!utils.isNearBottom(tiebaCommentConfig.isNearBottomValue)) {
+        prevPageScrollEvent: async (event) => {
+          if (event.jsTrigger) {
+            /* js主动触发 */
+          } else if (
+            !utils.isNearBottom(tiebaCommentConfig.isNearBottomValue)
+          ) {
             return;
           }
           loadingView.setText("Loading...", true);
@@ -3258,7 +3266,7 @@
             this
           );
           document.addEventListener("scroll", tiebaCommentConfig.funcLock.run);
-          utils.dispatchEvent(document, "scroll");
+          utils.dispatchEvent(document, "scroll", { jsTrigger: true });
           log.success("scroll监听事件【下一页】");
         },
         /**
@@ -3270,7 +3278,7 @@
             this
           );
           document.addEventListener("scroll", tiebaCommentConfig.funcLock.run);
-          utils.dispatchEvent(document, "scroll");
+          utils.dispatchEvent(document, "scroll", { jsTrigger: true });
           log.success("scroll监听事件【上一页】");
         },
         /**
@@ -3954,13 +3962,14 @@
             /* 监听地址改变 */
             log.success("监听地址改变");
             tiebaCommentConfig.vueRootView.__vue__.$router.push("/seeLzlReply");
-            DOMUtils.on(globalThis, "popstate", popstateEvent);
+            DOMUtils.on(window, "popstate", popstateEvent);
           }
 
           /**
            * 允许浏览器后退并关闭小窗
            */
           async function resumeBack() {
+            DOMUtils.off(window, "popstate", popstateEvent);
             log.success("浏览器地址后退，并关闭小窗");
             closeDialogByUrlChange();
             while (1) {
@@ -4976,7 +4985,7 @@
           window.location.href = `https://tieba.baidu.com/p/${tid}`;
           return false;
         });
-        utils.waitNode(".thread-bottom .forum").then((nodeList) => {
+        utils.waitNodeList(".thread-bottom .forum").then((nodeList) => {
           log.success("设置贴吧种类正确跳转");
           log.success(nodeList);
           nodeList.forEach((item) => {
@@ -4992,14 +5001,14 @@
             };
           });
         });
-        utils.waitNode(".topic-share-thread .list-content").then((nodeList) => {
-          utils.mutationObserver(nodeList[0], {
+        utils.waitNode(".topic-share-thread .list-content").then((element) => {
+          utils.mutationObserver(element, {
             callback: (mutations) => {
               mutations.forEach((item) => {
                 item.addedNodes.forEach((item2) => {
                   if (
                     typeof item2.className === "string" &&
-                    item2.className.indexOf("topic-share-item") != -1
+                    item2.className.includes("topic-share-item")
                   ) {
                     log.success("设置新增的帖子的贴吧种类正确跳转");
                     log.success(item2);
@@ -5064,8 +5073,8 @@
         },
         run() {
           this.setSuggestionCSS();
-          utils.waitNode("div.more-btn-desc").then((nodeList) => {
-            nodeList[0].outerHTML = `
+          utils.waitNode("div.more-btn-desc").then((element) => {
+            element.outerHTML = `
               <input type="search" id="tieba-search" placeholder="请输入搜索内容..." style="display: none;padding: 0 10px;height: 32px;line-height: 32px;font-size: 14px;border-radius: 5px;box-sizing: border-box;-webkit-appearance: none;-moz-appearance: none;-o-appearance: none;appearance: none;border: 1px solid #000000;outline: none;flex: 1;margin: 0px 40px;" autocomplete="off">
               <div class="more-btn-desc" style="margin-right: 13px;font-size: .15rem;font-weight: 700;color: #614ec2;">搜索</div>
               `;
@@ -5298,10 +5307,10 @@
                 log.error(getResp);
                 return "获取内容为空，可能触发了百度校验，请刷新网页再试";
               } else if (
-                getResp.data[0] &&
-                getResp.data[0]?.responseText?.match("wappass.baidu.com")
+                getResp.data &&
+                getResp.data?.responseText?.match("wappass.baidu.com")
               ) {
-                let url = getResp.data[0].responseText.match(/href="(.*?)"/)[1];
+                let url = getResp.data.responseText.match(/href="(.*?)"/)[1];
                 log.error("触发百度校验: " + url);
                 window.location.href = url;
                 return "触发百度校验";
@@ -5697,9 +5706,9 @@
             if (!tiebaBusiness.vueRootView["user"]["is_login"]) {
               return;
             }
-            utils.waitNode(".tb-forum-user__join-btn").then((nodeList) => {
+            utils.waitNode(".tb-forum-user__join-btn").then((element) => {
               log.success("修改页面中的APP内签到");
-              DOMUtils.on(nodeList[0], "click", function (event) {
+              DOMUtils.on(element, "click", function (event) {
                 utils.preventEvent(event);
                 let userPortrait =
                   tiebaBusiness.vueRootView["user"]["portrait"];
@@ -5901,94 +5910,96 @@
        * 循环加载更多内容
        */
       function loadMore() {
-        utils.waitNode(".BK-main-content", "#J-gotoPC-top").then(async () => {
-          let nextPageNode = document.querySelector("#J-gotoPC-top");
-          let nextPageUrl = nextPageNode.href;
-          let nextUrlObj = new URL(nextPageUrl);
-          let itemId = nextUrlObj.pathname.match(
-            new RegExp("/item/.+?/([0-9]+)", "i")
-          );
-          if (!itemId) {
-            log.error(nextPageUrl);
-            log.error("匹配id失败");
-            return;
-          }
-          log.success(`获取下一页地址: ${nextPageUrl}`);
-          loadingView.setCSS();
-          let loadingViewNode = loadingView.getParseLoadingNode(true);
-          log.success(document.querySelector(".BK-main-content"));
-          DOMUtils.after(
-            document.querySelector(".BK-main-content"),
-            loadingViewNode
-          );
-          loadingView.setLoadingViewElement(loadingViewNode);
-          while (1) {
-            loadingView.show();
-            let nextPageUrl = `https://baike.baidu.com${
-              nextUrlObj.pathname
-            }?wpf=3&ldr=1&page=${page}&insf=1&_=${new Date().getTime()}`;
-            log.info(nextPageUrl);
-            let getResp = await httpx.get({
-              url: nextPageUrl,
-              headers: {
-                "User-Agent":
-                  "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/112.0.0.0",
-              },
-            });
-            let respData = getResp.data;
-            if (getResp.status) {
-              let respObj = DOMUtils.parseHTML(
-                respData.responseText,
-                true,
-                true
-              );
-              let main_content = respObj.querySelector(".BK-main-content");
-              nextPageContent = main_content.innerHTML;
-              if (main_content.children.length <= 2) {
-                log.info("已到达最大页" + (page - 1));
+        utils
+          .waitNodeList(".BK-main-content", "#J-gotoPC-top")
+          .then(async () => {
+            let nextPageNode = document.querySelector("#J-gotoPC-top");
+            let nextPageUrl = nextPageNode.href;
+            let nextUrlObj = new URL(nextPageUrl);
+            let itemId = nextUrlObj.pathname.match(
+              new RegExp("/item/.+?/([0-9]+)", "i")
+            );
+            if (!itemId) {
+              log.error(nextPageUrl);
+              log.error("匹配id失败");
+              return;
+            }
+            log.success(`获取下一页地址: ${nextPageUrl}`);
+            loadingView.setCSS();
+            let loadingViewNode = loadingView.getParseLoadingNode(true);
+            log.success(document.querySelector(".BK-main-content"));
+            DOMUtils.after(
+              document.querySelector(".BK-main-content"),
+              loadingViewNode
+            );
+            loadingView.setLoadingViewElement(loadingViewNode);
+            while (1) {
+              loadingView.show();
+              let nextPageUrl = `https://baike.baidu.com${
+                nextUrlObj.pathname
+              }?wpf=3&ldr=1&page=${page}&insf=1&_=${new Date().getTime()}`;
+              log.info(nextPageUrl);
+              let getResp = await httpx.get({
+                url: nextPageUrl,
+                headers: {
+                  "User-Agent":
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/112.0.0.0",
+                },
+              });
+              let respData = getResp.data;
+              if (getResp.status) {
+                let respObj = DOMUtils.parseHTML(
+                  respData.responseText,
+                  true,
+                  true
+                );
+                let main_content = respObj.querySelector(".BK-main-content");
+                nextPageContent = main_content.innerHTML;
+                if (main_content.children.length <= 2) {
+                  log.info("已到达最大页" + (page - 1));
+                  insertUrlToImageNode();
+                  setImageWidthHeight();
+                  loadingView.setText("已到达最大页" + (page - 1));
+                  break;
+                } else {
+                  loadingView.setText("正在加载页 " + page, true);
+                  log.info(nextPageContent);
+                  DOMUtils.append(
+                    document.querySelector(".BK-main-content"),
+                    nextPageContent
+                  );
+                  // 等待350ms，防止被百度识别为机器人
+                  await utils.sleep(350);
+                }
+                if (GM_Menu.get("baidu_baike_sync_next_page_address")) {
+                  window.history.pushState("forward", null, respData.finalUrll);
+                }
+                page++;
+              } else if (getResp.type === "onerror") {
+                log.error("请求失败 👇");
+                log.error(respData);
                 insertUrlToImageNode();
                 setImageWidthHeight();
-                loadingView.setText("已到达最大页" + (page - 1));
+                loadingView.setText("请求失败");
+                loadingView.hideIcon();
+                break;
+              } else if (getResp.type === "ontimeout") {
+                log.error("请求超时 👇");
+                insertUrlToImageNode();
+                setImageWidthHeight();
+                loadingView.setText("请求超时");
+                loadingView.hideIcon();
                 break;
               } else {
-                loadingView.setText("正在加载页 " + page, true);
-                log.info(nextPageContent);
-                DOMUtils.append(
-                  document.querySelector(".BK-main-content"),
-                  nextPageContent
-                );
-                // 等待350ms，防止被百度识别为机器人
-                await utils.sleep(350);
+                log.error("未知错误");
+                insertUrlToImageNode();
+                setImageWidthHeight();
+                loadingView.setText("未知错误");
+                loadingView.hideIcon();
+                break;
               }
-              if (GM_Menu.get("baidu_baike_sync_next_page_address")) {
-                window.history.pushState("forward", null, respData.finalUrll);
-              }
-              page++;
-            } else if (getResp.type === "onerror") {
-              log.error("请求失败 👇");
-              log.error(respData);
-              insertUrlToImageNode();
-              setImageWidthHeight();
-              loadingView.setText("请求失败");
-              loadingView.hideIcon();
-              break;
-            } else if (getResp.type === "ontimeout") {
-              log.error("请求超时 👇");
-              insertUrlToImageNode();
-              setImageWidthHeight();
-              loadingView.setText("请求超时");
-              loadingView.hideIcon();
-              break;
-            } else {
-              log.error("未知错误");
-              insertUrlToImageNode();
-              setImageWidthHeight();
-              loadingView.setText("未知错误");
-              loadingView.hideIcon();
-              break;
             }
-          }
-        });
+          });
       }
       loadMore();
     },
@@ -6130,8 +6141,8 @@
         return;
       }
       GM_addStyle(this.css.fanyiapp);
-      utils.waitNode("#page-content").then((nodeList) => {
-        nodeList[0].setAttribute("style", "max-height:unset !important");
+      utils.waitNode("#page-content").then((element) => {
+        element.setAttribute("style", "max-height:unset !important");
       });
       log.info("插入CSS规则");
     },
@@ -6343,7 +6354,7 @@
         .waitNode(
           "#app section.vf-home-booth div.vf-w-button.vf-home-booth-camera"
         )
-        .then((nodeList) => {
+        .then((element) => {
           let uploadImageDivDOM = DOMUtils.createElement("div", {
             class: "vf-home-booth-camera",
           });
@@ -6367,10 +6378,10 @@
             document.querySelector("input#whitesev-upload-image").click();
           });
 
-          DOMUtils.after(nodeList[0], uploadImageDivDOM);
+          DOMUtils.after(element, uploadImageDivDOM);
         });
       /* 重构主页的往下滑动右下角出现的搜索图标按钮 */
-      utils.waitNode(".vf-home.view-page").then((nodeList) => {
+      utils.waitNode(".vf-home.view-page").then((element) => {
         let divHomeCamera = DOMUtils.createElement("div", {
           class: "whitesev-vf-home-camera",
         });
@@ -6389,9 +6400,9 @@
         DOMUtils.on(divHomeCamera, "click", function () {
           document.querySelector("input#whitesev-upload-image").click();
         });
-        DOMUtils.append(nodeList[0], divHomeCamera);
+        DOMUtils.append(element, divHomeCamera);
         utils.watchObject(
-          nodeList[0].__vue__,
+          element.__vue__,
           "showBottomCamera",
           () => {
             return false;
@@ -6415,36 +6426,34 @@
         }
       });
       /* 在已搜索出相关结果的界面中的重构【重拍】按钮 */
-      utils
-        .waitNode("#viewport .graph-imagecut-banner-ctn")
-        .then((nodeList) => {
-          let retakeDivDOM = DOMUtils.createElement("div", {
-            class: "retake-image",
-            textContent: "重拍",
-          });
-          DOMUtils.css(retakeDivDOM, {
-            position: "absolute",
-            top: "50%",
-            right: "0",
-            padding: "0 .17rem",
-            "font-size": "16px",
-            "line-height": "60px",
-            color: "#000",
-            "-webkit-transform": "translateY(-50%)",
-            transform: "translateY(-50%)",
-          });
-          DOMUtils.on(retakeDivDOM, "click", function (event) {
-            utils.preventEvent(event);
-            document.querySelector("input#whitesev-upload-image").click();
-            DOMUtils.trigger(
-              document.querySelector("input#whitesev-upload-image"),
-              "click"
-            );
-          });
-          setTimeout(() => {
-            DOMUtils.append(nodeList[0], retakeDivDOM);
-          }, 2000);
+      utils.waitNode("#viewport .graph-imagecut-banner-ctn").then((element) => {
+        let retakeDivDOM = DOMUtils.createElement("div", {
+          class: "retake-image",
+          textContent: "重拍",
         });
+        DOMUtils.css(retakeDivDOM, {
+          position: "absolute",
+          top: "50%",
+          right: "0",
+          padding: "0 .17rem",
+          "font-size": "16px",
+          "line-height": "60px",
+          color: "#000",
+          "-webkit-transform": "translateY(-50%)",
+          transform: "translateY(-50%)",
+        });
+        DOMUtils.on(retakeDivDOM, "click", function (event) {
+          utils.preventEvent(event);
+          document.querySelector("input#whitesev-upload-image").click();
+          DOMUtils.trigger(
+            document.querySelector("input#whitesev-upload-image"),
+            "click"
+          );
+        });
+        setTimeout(() => {
+          DOMUtils.append(element, retakeDivDOM);
+        }, 2000);
+      });
       DOMUtils.ready(function () {
         let uploadImageInput = DOMUtils.createElement("input", {
           id: "whitesev-upload-image",
