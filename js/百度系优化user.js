@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化
 // @supportURL   https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化/feedback
-// @version      2023.10.20
+// @version      2023.10.26.14
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】、【百度网盘】
 // @match        *://m.baidu.com/*
@@ -45,12 +45,16 @@
 // @grant        GM_info
 // @grant        unsafeWindow
 // @require      https://greasyfork.org/scripts/449471-viewer/code/Viewer.js?version=1249086
-// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1262507
+// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1270431
 // @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1258535
 // @run-at       document-start
 // ==/UserScript==
 
 (function () {
+  /**
+   * 是否为调试模式
+   */
+  const DEBUG = true;
   /**
    * @type {import("../库/Viewer")}
    */
@@ -71,6 +75,7 @@
   });
   const httpx = new utils.Httpx(GM_xmlhttpRequest);
   httpx.config({
+    logDetails: true,
     onabort: function () {
       log.error("请求取消");
     },
@@ -90,48 +95,6 @@
     GM_registerMenuCommand,
     GM_unregisterMenuCommand,
   });
-  const CSDN_FLAG_CSS = `
-    .csdn-flag-component-box {
-        /*margin: 0 auto;
-        text-align: center;
-        display: inline;*/
-        display: flex;
-        margin: 0;
-        text-align: left;
-        font-size: 0;
-        position: relative;
-        width: 260px;
-        margin: 5px 0px;
-    }
-    .csdn-flag-component-box a {
-        display: inline-block;
-        font-size: 14px;
-    }
-    .csdn-flag-component-box .praise {
-        padding-right: 20px;
-        background: #ff5722;
-        border-top-left-radius: 50px;
-        border-top-right-radius: 50px;
-        border-bottom-left-radius: 50px;
-        border-bottom-right-radius: 50px;
-        background: -webkit-linear-gradient(left,#ff5722,#f78d6b);
-        background: -o-linear-gradient(right,#ff5722,#f78d6b);
-        background: -moz-linear-gradient(right,#ff5722,#f78d6b);
-        background: linear-gradient(to right,#ff5722,#f78d6b);
-    }
-    .csdn-flag-component-box .praise,
-    .csdn-flag-component-box .share {
-        /*width: 110px;
-        height: 34px;
-        line-height: 34px;*/
-        height:auto;
-        line-height:normal;
-        color: #fff;
-        background: #ff0505;
-        border-radius: 5px;
-        padding: 2px 4px;
-    }
-`;
 
   class LoadingView {
     constructor() {
@@ -796,12 +759,28 @@
           height: 5px;
           background-color: #fff;
       }
+      div.${this.config.element.searchSelectClassName} ul.${
+        this.config.element.searchSelectHintClassName
+      }::-moz-scrollbar {
+          width: 5px;
+          height: 5px;
+          background-color: #fff;
+      }
       /*定义滚动条轨道
       内阴影+圆角*/
       div.${this.config.element.searchSelectClassName} ul.${
         this.config.element.searchSelectHintClassName
       }::-webkit-scrollbar-track {
           -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+          box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+          border-radius: 2px;
+          background-color: #fff;
+      }
+      div.${this.config.element.searchSelectClassName} ul.${
+        this.config.element.searchSelectHintClassName
+      }::-moz-scrollbar-track {
+          -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+          box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
           border-radius: 2px;
           background-color: #fff;
       }
@@ -812,6 +791,15 @@
       }::-webkit-scrollbar-thumb {
           border-radius: 2px;
           -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+          box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+          background-color: #ccc;
+      }
+      div.${this.config.element.searchSelectClassName} ul.${
+        this.config.element.searchSelectHintClassName
+      }::-moz-scrollbar-thumb {
+          border-radius: 2px;
+          -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+          box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
           background-color: #ccc;
       }
       @keyframes searchSelectFalIn {
@@ -1305,6 +1293,7 @@
 				display: -webkit-flex;
 				display: flex;
 				-webkit-box-align: center;
+        -moz-box-align: center;
 				-webkit-align-items: center;
 				align-items: center;
 			}
@@ -1320,15 +1309,19 @@
 				border-radius: .09rem;
 			}
 			.c-result-content div[class*="tieba-newxml-forum-class__"]{
-				display: -webkit-box;
 				display: -webkit-flex;
 				display: flex;
 				-webkit-box-orient: vertical;
+        -moz-box-orient: vertical;
 				-webkit-box-direction: normal;
+        -moz-box-direction: normal;
 				-webkit-flex-direction: column;
+        -moz-flex-direction: column;
 				flex-direction: column;
 				-webkit-box-pack: center;
+				-moz-box-pack: center;
 				-webkit-justify-content: center;
+				-moz-justify-content: center;
 				justify-content: center;
 				max-width: 2.2rem;
 			}
@@ -1345,11 +1338,12 @@
 				color: #1f1f1f;
 			}
 			.c-result-content div[class*="tieba-newxml-thread-comment-user__"]{
-				display: -webkit-box;
 				display: -webkit-flex;
 				display: flex;
 				-webkit-box-align: center;
+				-moz-box-align: center;
 				-webkit-align-items: center;
+				-moz-align-items: center;
 				align-items: center;
 				margin-top: .03rem;
 			}
@@ -1377,14 +1371,20 @@
         text-align: center;
         text-decoration: none;
         -webkit-tap-highlight-color: transparent;
+        -moz-tap-highlight-color: transparent;
         text-overflow: ellipsis;
         white-space: nowrap;
         -webkit-box-orient: horizontal;
+        -moz-box-orient: horizontal;
         -webkit-box-align: stretch;
+        -moz-box-align: stretch;
         display: block;
         -webkit-justify-content: space-between;
+        -moz-justify-content: space-between;
         -webkit-align-items: stretch;
+        -moz-align-items: stretch;
         -webkit-flex-wrap: nowrap;
+        -moz-flex-wrap: nowrap;
       }
 
       /* 让搜索中某些视频的阶段可以横向滚动 */
@@ -2134,6 +2134,52 @@
           );
         },
         /**
+         * 添加CSDN的CSS
+         */
+        addCSDNFlagCSS() {
+          GM_addStyle(`
+          .csdn-flag-component-box {
+              /*margin: 0 auto;
+              text-align: center;
+              display: inline;*/
+              display: flex;
+              margin: 0;
+              text-align: left;
+              font-size: 0;
+              position: relative;
+              width: 260px;
+              margin: 5px 0px;
+          }
+          .csdn-flag-component-box a {
+              display: inline-block;
+              font-size: 14px;
+          }
+          .csdn-flag-component-box .praise {
+              padding-right: 20px;
+              background: #ff5722;
+              border-top-left-radius: 50px;
+              border-top-right-radius: 50px;
+              border-bottom-left-radius: 50px;
+              border-bottom-right-radius: 50px;
+              background: -webkit-linear-gradient(left,#ff5722,#f78d6b);
+              background: -o-linear-gradient(right,#ff5722,#f78d6b);
+              background: -moz-linear-gradient(right,#ff5722,#f78d6b);
+              background: linear-gradient(to right,#ff5722,#f78d6b);
+          }
+          .csdn-flag-component-box .praise,
+          .csdn-flag-component-box .share {
+              /*width: 110px;
+              height: 34px;
+              line-height: 34px;*/
+              height:auto;
+              line-height:normal;
+              color: #fff;
+              background: #ff0505;
+              border-radius: 5px;
+              padding: 2px 4px;
+          }`);
+        },
+        /**
          * 给元素添加【CSDN】下载标识
          * @param {Element} targetNode
          */
@@ -2503,7 +2549,7 @@
             innerBottomSmallElementList.forEach((item) => {
               let searchText = item.textContent.trim();
               rwListContainerHTML += `
-              <div class="rw-list-new rw-list-new2" style="padding: 0.06rem;">
+              <div class="rw-list-new rw-list-new2" style="padding: 0.06rem;width: 49%;">
                 <a href="javascript:;" onclick="return false;" target="_self" class="whitesev-gm-refactor-everyone-searching">
                   <span>${searchText}</span>
                 </a>
@@ -3157,6 +3203,10 @@
         param_tid: null,
         param_forum_id: null,
         /**
+         * 进过百度验证的额外安全参数
+         */
+        extraSearchSignParams: "",
+        /**
          * @type {HTMLElement}
          */
         vueRootView: null,
@@ -3179,8 +3229,8 @@
           loadingView.setText("Loading...", true);
           loadingView.show();
           let timeStamp = Date.now();
-          let nextPageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}`;
-          let nextPageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0`;
+          let nextPageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
+          let nextPageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
           log.info("请求下一页评论的url: " + nextPageUrl);
           log.info("贴子所有评论的url: " + nextPageAllCommentUrl);
           let nextPageDOM = await tiebaCommentConfig.getPageComment(
@@ -3245,8 +3295,8 @@
           loadingView.setText("Loading...", true);
           loadingView.show();
           let timeStamp = Date.now();
-          let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}`;
-          let pageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0`;
+          let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
+          let pageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
           log.info("请求上一页评论的url: " + pageUrl);
           log.info("贴子所有评论的url: " + pageAllCommentUrl);
           let nextPageDOM = await tiebaCommentConfig.getPageComment(pageUrl);
@@ -3757,6 +3807,7 @@
           .whitesev-reply-dialog-avatar {
             position: relative;
             -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
             box-sizing: border-box;
             width: .36rem;
             height: .36rem;
@@ -3766,6 +3817,7 @@
             background-position: 50%;
             background-size: cover;
             -webkit-box-flex: 0;
+            -moz-box-flex: 0;
             -webkit-flex: none;
             -ms-flex: none;
             flex: none;
@@ -3802,7 +3854,6 @@
           }
           /* 底部信息 */
           .whitesev-reply-dialog-user-desc-info{
-              display: -webkit-box;
               display: -webkit-flex;
               display: -ms-flexbox;
               display: flex;
@@ -3811,12 +3862,13 @@
           }
           .whitesev-reply-dialog-user-desc-info span{
               margin-right: .08rem;
-              display: -webkit-box;
               display: -webkit-flex;
               display: -ms-flexbox;
               display: flex;
               -webkit-box-align: center;
+              -moz-box-align: center;
               -webkit-align-items: center;
+              -moz-align-items: center;
               -ms-flex-align: center;
               align-items: center;
               font-size: .12rem;
@@ -4263,7 +4315,9 @@
          */
         async getLzlCommentReply(tid = "", pid = "", pn = 1) {
           let getResp = await httpx.get({
-            url: `https://tieba.baidu.com/p/comment?tid=${tid}&pid=${pid}&pn=${pn}&t=${new Date().getTime()}`,
+            url: `https://tieba.baidu.com/p/comment?tid=${tid}&pid=${pid}&pn=${pn}&t=${new Date().getTime()}${
+              tiebaCommentConfig.extraSearchSignParams
+            }`,
             headers: {
               "User-Agent": utils.getRandomPCUA(),
               Host: "tieba.baidu.com",
@@ -4335,18 +4389,21 @@
             return;
           }
           let onlyLzInnerElement = DOMUtils.createElement("div", {
-            style: `display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            line-height: .24rem;
-            border-radius: .14rem;
-            font-size: .13rem;
-            color: #614ec2;`,
+            style: `
+              display: -webkit-flex;
+              display: -ms-flexbox;
+              display: flex;
+              -webkit-box-align: center;
+              -moz-box-align: center;
+              -webkit-align-items: center;
+              -moz-align-items: center;
+              -ms-flex-align: center;
+              align-items: center;
+              line-height: .24rem;
+              border-radius: .14rem;
+              font-size: .13rem;
+              color: #614ec2;
+            `,
             class: "white-only-lz",
             textContent: "只看楼主",
           });
@@ -4379,21 +4436,24 @@
             return;
           }
           let btnElement = DOMUtils.createElement("div", {
-            style: `display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            line-height: .24rem;
-            border-radius: .14rem;
-            font-size: .13rem;
-            color: #614ec2;
-            width: auto;
-            margin-left: auto;
-            margin-right: 15px;`,
+            style: `
+              display: -webkit-flex;
+              display: -ms-flexbox;
+              display: flex;
+              -webkit-box-align: center;
+              -moz-box-align: center;
+              -webkit-align-items: center;
+              -moz-align-items: center;
+              -ms-flex-align: center;
+              align-items: center;
+              line-height: .24rem;
+              border-radius: .14rem;
+              font-size: .13rem;
+              color: #614ec2;
+              width: auto;
+              margin-left: auto;
+              margin-right: 15px;
+            `,
             class: "white-btn-comment-reverse",
           });
           replySwitchElement.appendChild(btnElement);
@@ -4437,12 +4497,27 @@
             url: url,
             headers: {
               "User-Agent": utils.getRandomPCUA(),
+              Referer: "tieba.baidu.com",
             },
           });
           let respData = getResp.data;
           log.success(["获取第一页的评论", respData]);
           if (getResp.status) {
-            return DOMUtils.parseHTML(respData.responseText, true, true);
+            let pageCommentHTML = DOMUtils.parseHTML(
+              respData.responseText,
+              true,
+              true
+            );
+            if (
+              pageCommentHTML.title === "百度安全验证" ||
+              respData.finalUrl.startsWith("https://wappass.baidu.com")
+            ) {
+              log.error("触发百度安全验证 👇" + respData.finalUrl);
+              log.error(respData);
+              // window.location.href = respData.finalUrl;
+            } else {
+              return pageCommentHTML;
+            }
           } else if (getResp.type === "onerror") {
             if (
               typeof respData.error === "string" &&
@@ -4468,6 +4543,7 @@
             headers: {
               Accept: "application/json, text/javascript, */*; q=0.01",
               "User-Agent": utils.getRandomPCUA(),
+              Referer: "tieba.baidu.com",
             },
           });
           let respData = getResp.data;
@@ -4541,8 +4617,8 @@
               tiebaCommentConfig.page = 1;
               loadingView.setText("Loading...", true);
               loadingView.show();
-              let url = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0`;
-              let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}`;
+              let url = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
+              let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
               let pageDOM = await tiebaCommentConfig.getPageComment(pageUrl);
               let pageCommentList = await tiebaCommentConfig.getPageCommentList(
                 url
@@ -4612,8 +4688,8 @@
               tiebaCommentConfig.page = 1;
               loadingView.setText("Loading...", true);
               loadingView.show();
-              let url = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0`;
-              let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}`;
+              let url = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
+              let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
               let pageDOM = await tiebaCommentConfig.getPageComment(pageUrl);
               let pageCommentList = await tiebaCommentConfig.getPageCommentList(
                 url
@@ -4667,6 +4743,25 @@
           }
         },
         run() {
+          let urlSignParams = new URLSearchParams(window.location.search);
+          if (
+            urlSignParams.has("p_tk") &&
+            urlSignParams.has("p_sign") &&
+            urlSignParams.has("p_signature")
+          ) {
+            log.error("当前页面是经过百度验证后的网站，添加验证参数");
+            urlSignParams.forEach((value, key) => {
+              if (["pn", "tid", "pid", "fid", "t", "see_lz"].includes(key)) {
+                return;
+              }
+              log.success(`设置额外参数：${key}=${value}`);
+              tiebaCommentConfig.extraSearchSignParams += `&${key}=${value}`;
+            });
+            log.error([
+              "百度验证后的参数👇",
+              tiebaCommentConfig.extraSearchSignParams,
+            ]);
+          }
           utils.waitNode(".main-page-wrap").then(() => {
             GM_Menu.add({
               key: "baidu_tieba_lzl_ban_global_back",
@@ -4698,14 +4793,15 @@
               margin-bottom: .06rem;
           }
           .user-line-wrapper[data-v-188c0e84], .user-line[data-v-188c0e84] {
-              display: -webkit-box;
               display: -webkit-flex;
               display: -ms-flexbox;
               display: flex;
           }
           .user-line-wrapper[data-v-188c0e84] {
               -webkit-box-pack: justify;
+              -moz-box-pack: justify;
               -webkit-justify-content: space-between;
+              -moz-justify-content: space-between;
               -ms-flex-pack: justify;
               justify-content: space-between;
           }
@@ -4714,16 +4810,19 @@
           }
           .user-line[data-v-188c0e84] {
               -webkit-box-align: center;
+              -moz-box-align: center;
               -webkit-align-items: center;
+              -moz-align-items: center;
               -ms-flex-align: center;
               align-items: center;
               -webkit-box-pack: left;
+              -moz-box-pack: left;
               -webkit-justify-content: left;
+              -moz-justify-content: left;
               -ms-flex-pack: left;
               justify-content: left;
           }
           .user-line-wrapper[data-v-188c0e84], .user-line[data-v-188c0e84] {
-              display: -webkit-box;
               display: -webkit-flex;
               display: -ms-flexbox;
               display: flex;
@@ -5801,16 +5900,16 @@
          */
         clientCallMasquerade() {
           let originGetItem = window.localStorage.getItem;
-          window.localStorage.getItem = function(key){
-            if(key === "p_w_app_call" || key=== "p_w_launchappcall"){
+          window.localStorage.getItem = function (key) {
+            if (key === "p_w_app_call" || key === "p_w_launchappcall") {
               return JSON.stringify({
-                "value":1,
-                "date":utils.formatTime(undefined,"yyyyMMdd"),
-              })
-            }else{
-              return originGetItem.call(window.localStorage,key);
+                value: 1,
+                date: utils.formatTime(undefined, "yyyyMMdd"),
+              });
+            } else {
+              return originGetItem.call(window.localStorage, key);
             }
-          }
+          };
         },
       };
       tiebaBusiness.clientCallMasquerade();
@@ -6595,7 +6694,29 @@
     },
   };
 
+  /* ---------------------------- */
+  if (DEBUG) {
+    unsafeWindow.GM_Debug_WhiteSev = {
+      httpx,
+      log,
+      utils,
+      DOMUtils,
+      Viewer,
+      GM_Menu,
+      GM_addStyle,
+      GM_registerMenuCommand,
+      GM_unregisterMenuCommand,
+      GM_getValue,
+      GM_setValue,
+      GM_deleteValue,
+      GM_listValues,
+      GM_xmlhttpRequest,
+      GM_info,
+      window,
+      globalThis,
+    };
+  }
   const loadingView = new LoadingView();
-  GM_addStyle(CSDN_FLAG_CSS);
   baidu.init();
+  /* ---------------------------- */
 })();
