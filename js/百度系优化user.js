@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化
 // @supportURL   https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化/feedback
-// @version      2023.10.26.14
+// @version      2023.10.26.19
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】、【百度网盘】
 // @match        *://m.baidu.com/*
@@ -45,8 +45,8 @@
 // @grant        GM_info
 // @grant        unsafeWindow
 // @require      https://greasyfork.org/scripts/449471-viewer/code/Viewer.js?version=1249086
-// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1270431
-// @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1258535
+// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1270547
+// @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1270549
 // @run-at       document-start
 // ==/UserScript==
 
@@ -54,7 +54,7 @@
   /**
    * 是否为调试模式
    */
-  const DEBUG = true;
+  const DEBUG = false;
   /**
    * @type {import("../库/Viewer")}
    */
@@ -3949,12 +3949,18 @@
           let otherCommentsHTML = "";
           let userAvatarHostName = new URL(mainUserAvatar).hostname;
           let userAvatarPath = new URL(mainUserAvatar).pathname.split("/")[1];
+          let landlordInfo = tiebaBusiness.getLandlordInfo();
           log.success(["头像加密值路径是", userAvatarPath]);
+          log.success(["本帖楼主的信息", landlordInfo]);
           currentCommentData.forEach((item) => {
             /* 用户信息 */
             let itemUserInfo = userList[item["user_id"]];
             /* 用户id值 */
             let userPortrait = itemUserInfo["portrait"];
+            /* 判断是否是楼主 */
+            let isLandlord = Boolean(
+              landlordInfo && landlordInfo.id === item["user_id"]
+            );
             /* 获取时间差 */
             let itemUserCommentTime =
               utils.getDaysDifference(
@@ -3983,10 +3989,18 @@
               <div class="whitesev-reply-dialog-user-line" data-portrait="${userPortrait}">
                 <div class="whitesev-reply-dialog-avatar" style="background-image: url(${itemUserAvatar});"></div>
                 <div class="whitesev-reply-dialog-user-info">
-                  <div class="whitesev-reply-dialog-user-username">${item["show_nickname"]}</div>
+                  <div class="whitesev-reply-dialog-user-username">${
+                    item["show_nickname"]
+                  }${
+              isLandlord
+                ? `<svg data-v-188c0e84="" class="landlord"><use xlink:href="#icon_landlord"></use></svg>`
+                : ""
+            }</div>
                 </div>
               </div>
-              <div class="whitesev-reply-dialog-user-comment">${item["content"]}</div>
+              <div class="whitesev-reply-dialog-user-comment">${
+                item["content"]
+              }</div>
               <div class="whitesev-reply-dialog-user-desc-info">
                   <span data-time="">${itemUserCommentTime}</span>
                   <span data-ip="">${itemUserCommentIp}</span>
@@ -5896,22 +5910,85 @@
           }
         },
         /**
-         * 客户端已调用调用伪装
+         * 客户端已调用伪装
          */
         clientCallMasquerade() {
           let originGetItem = window.localStorage.getItem;
           window.localStorage.getItem = function (key) {
             if (key === "p_w_app_call" || key === "p_w_launchappcall") {
+              log.info("客户端已调用调用伪装 " + key);
               return JSON.stringify({
                 value: 1,
                 date: utils.formatTime(undefined, "yyyyMMdd"),
               });
+            } else if (key === "p_w_new_slient") {
+              log.info("客户端已调用调用伪装 " + key);
+              return "1";
             } else {
               return originGetItem.call(window.localStorage, key);
             }
           };
+          window.localStorage.setItem(
+            "p_w_new_slient_" + utils.formatTime(undefined, "yyyy-MM-dd"),
+            1
+          );
+        },
+        /**
+         * 获取本帖楼主的信息
+         * @returns {?{
+         *   id: number,
+         *   name: string,
+         *   name_show: string,
+         *   portrait: string,
+         *   show_nickname: string,
+         *   type: number,
+         *   userhide: number,
+         * }}
+         */
+        getLandlordInfo() {
+          return document.querySelector(
+            ".main-page-wrap .user-line-wrapper.thread-user-line"
+          )?.__vue__?.$props?.author;
         },
       };
+
+      /**
+       * 贴吧 吧内功能
+       */
+      const tiebaBaNei = {
+        /**
+         * 记住当前用户的看帖排序
+         * + -1 不知道什么作用
+         * + 1  不知道什么作用
+         * + 2  回复
+         * + 3  发布
+         */
+        rememberPostSort() {
+          GM_Menu.add({
+            key: "baidu_tieba_remember_user_post_sort",
+            text: "记住当前选择的看帖排序",
+            enable: true,
+          });
+          if (!GM_Menu.get("baidu_tieba_remember_user_post_sort")) {
+            return;
+          }
+          let userSortModel = parseInt(
+            GM_getValue("baidu-tieba-sort-model", 3)
+          );
+          utils
+            .waitNode(".tb-page__main .tb-sort .tab-pack")
+            .then((element) => {
+              let originChange = element.__vue__.change;
+              originChange(userSortModel);
+              element.__vue__.change = function (index) {
+                GM_setValue("baidu-tieba-sort-model", index);
+                originChange(index);
+              };
+              log.info("注入记住当前选择的看帖排序");
+            });
+        },
+      };
+
       tiebaBusiness.clientCallMasquerade();
       GM_addStyle(this.css.tieba);
       log.info("插入CSS规则");
@@ -5927,6 +6004,14 @@
         )
       ) {
         redirectJump();
+      }
+      if (
+        this.currentUrl.match(
+          /^http(s|):\/\/(tieba.baidu|www.tieba).com\/f\?kw=/g
+        )
+      ) {
+        /* 吧内 */
+        tiebaBaNei.rememberPostSort();
       }
       tiebaSearchConfig.run();
       /* tiebaBusiness.run(); */
