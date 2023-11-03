@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化
 // @supportURL   https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化/feedback
-// @version      2023.11.3
+// @version      2023.11.3.20
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @match        *://m.baidu.com/*
@@ -46,8 +46,8 @@
 // @grant        GM_info
 // @grant        unsafeWindow
 // @require      https://greasyfork.org/scripts/449471-viewer/code/Viewer.js?version=1249086
-// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1274269
-// @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1270549
+// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1274594
+// @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1274595
 // @run-at       document-start
 // ==/UserScript==
 
@@ -88,6 +88,7 @@
       log.error(["httpx-onerror 请求异常", response]);
     },
   });
+
   /**
    * 菜单对象
    */
@@ -2866,13 +2867,14 @@
                 let dataVueSsrId = "data-vue-ssr-id";
                 let dataVueSsrIdValue = item.getAttribute(dataVueSsrId);
                 if (
+                  utils.isNull(dataVueSsrIdValue) ||
                   !document.querySelector(
-                    "style[data-vue-ssr-id='" + dataVueSsrIdValue + "']"
+                    `style[data-vue-ssr-id="${dataVueSsrIdValue}"]`
                   )
                 ) {
                   let cssDOM = GM_addStyle(item.innerHTML);
                   cssDOM.setAttribute("data-vue-ssr-id", dataVueSsrIdValue);
-                  log.info(`插入Vue的CSS id: ${dataVueSsrIdValue}`);
+                  log.info(["插入Vue的CSS", cssDOM]);
                 }
               });
 
@@ -3035,25 +3037,34 @@
         log.info("插入CSS规则");
         GM_addStyle(this.css.searchBaiduHealth);
 
-        GM_Menu.add([{
-          key: "baidu_search_headlth_shield_other_info",
-          text:"【屏蔽】底部其它信息",
-          enable: true
-        },{
-          key: "baidu_search_headlth_shield_bottom_toolbar",
-          text:"【屏蔽】底部工具栏",
-          enable: true
-        }])
-        if(GM_Menu.get("baidu_search_headlth_shield_other_info")){
-          log.success(GM_Menu.getShowTextValue("baidu_search_headlth_shield_other_info"));
+        GM_Menu.add([
+          {
+            key: "baidu_search_headlth_shield_other_info",
+            text: "【屏蔽】底部其它信息",
+            enable: true,
+          },
+          {
+            key: "baidu_search_headlth_shield_bottom_toolbar",
+            text: "【屏蔽】底部工具栏",
+            enable: true,
+          },
+        ]);
+        if (GM_Menu.get("baidu_search_headlth_shield_other_info")) {
+          log.success(
+            GM_Menu.getShowTextValue("baidu_search_headlth_shield_other_info")
+          );
           GM_addStyle(`
           article[class] > div[class^="index_container"]{
             display: none !important;
           }
           `);
         }
-        if(GM_Menu.get("baidu_search_headlth_shield_bottom_toolbar")){
-          log.success(GM_Menu.getShowTextValue("baidu_search_headlth_shield_bottom_toolbar"));
+        if (GM_Menu.get("baidu_search_headlth_shield_bottom_toolbar")) {
+          log.success(
+            GM_Menu.getShowTextValue(
+              "baidu_search_headlth_shield_bottom_toolbar"
+            )
+          );
           GM_addStyle(`
           article[class] > div[class^="index_healthServiceButtonsRow"]{
             display: none !important;
@@ -3233,7 +3244,12 @@
         },
         {
           key: "baijiahao_shield_user_comment_input_box",
-          text: "【屏蔽】评论输入框",
+          text: "【屏蔽】底部悬浮工具栏",
+        },
+        {
+          key: "baijiahao_hijack_wakeup",
+          text: "拦截唤醒",
+          enable: false,
         },
       ]);
       if (GM_Menu.get("baijiahao_shield_recommended_article")) {
@@ -3247,9 +3263,12 @@
         /* 电脑端的左边的按钮-屏蔽 */
         #ssr-content > :last-child ,
         /* 电脑端的右边的推荐-屏蔽 */
-        #ssr-content > div:nth-child(2) > div:nth-child(1) > div:nth-child(2){
+        #ssr-content > div:nth-child(2) > div:nth-child(1) > div:nth-child(2),
+        /* 简单UA下的精彩推荐 */
+        #page_wrapper div.spider > div[class]:nth-child(4){
           display: none !important;
         }
+
         /* 电脑端的文章居中 */
         #ssr-content > div:nth-child(2) > div:nth-child(1) > div:nth-child(1){
           width: 55% !important;
@@ -3273,13 +3292,36 @@
           display: none !important;
         }`);
       }
-
+      if (GM_Menu.get("baijiahao_hijack_wakeup")) {
+        log.success(GM_Menu.getShowTextValue("baijiahao_hijack_wakeup"));
+        let originCall = Function.prototype.call;
+        Function.prototype.call = function () {
+          if (
+            arguments.length === 2 &&
+            arguments[0] === undefined &&
+            "arg" in arguments[1] &&
+            "delegate" in arguments[1] &&
+            "done" in arguments[1] &&
+            "method" in arguments[1] &&
+            "next" in arguments[1] &&
+            "prev" in arguments[1]
+          ) {
+            log.success(["修改参数并拦截唤醒", arguments[1]]);
+            arguments[1]["method"] = "return";
+            arguments[1]["next"] = "end";
+            arguments[1]["prev"] = 24;
+          }
+          let result = originCall.apply(this, arguments);
+          return result;
+        };
+      }
       let originalAppendChild = Node.prototype.appendChild;
       Node.prototype.appendChild = function (element) {
         if (
           element.localName === "script" &&
           element?.src?.includes("landing-share")
         ) {
+          log.success("拦截：" + element.src);
           return;
         }
         return originalAppendChild.call(this, element);
@@ -6925,6 +6967,7 @@
         let divHomeCamera = DOMUtils.createElement("div", {
           class: "whitesev-vf-home-camera",
         });
+        document.querySelector().style.display;
         DOMUtils.css(divHomeCamera, {
           display: "none",
           position: "fixed",
