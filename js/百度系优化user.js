@@ -3,8 +3,9 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化
 // @supportURL   https://greasyfork.org/zh-CN/scripts/418349-移动端-百度系优化/feedback
-// @version      2023.11.12
+// @version      2023.11.17.14
 // @author       WhiteSevs
+// @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @match        *://m.baidu.com/*
 // @match        *://www.baidu.com/*
@@ -47,10 +48,9 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        unsafeWindow
-// @require      https://greasyfork.org/scripts/449471-viewer/code/Viewer.js?version=1249086
-// @require      https://greasyfork.org/scripts/455186-whitesevsutils/code/WhiteSevsUtils.js?version=1279009
-// @require      https://greasyfork.org/scripts/465772-domutils/code/DOMUtils.js?version=1274595
-// @run-at       document-start
+// @require      https://update.greasyfork.org/scripts/449471/1249086/Viewer.js
+// @require      https://update.greasyfork.org/scripts/455186/1281176/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/465772/1274595/DOMUtils.js
 // ==/UserScript==
 
 (function () {
@@ -1689,14 +1689,16 @@
       }`,
       haokan: `
       div.share-origin.wx-share-launch,
-      div.open-app-top.share-origin-fixed.wx-share-launch,
+      div.open-app-top,
       div.open-app-bottom.wx-share-launch,
       /* 打开APP  好看更清晰(1080P) */
       .NewOpenApp,
       /* 顶部空白区域 */
       .placeholder,
       /* 底部好看视频图片 */
-      .page-buttom{
+      .page-buttom,
+      /* 暂停视频弹出来的打开百度好看视频 */
+      .video-player-download-tips{
         display: none !important;
       }
       `,
@@ -1738,12 +1740,20 @@
       .question-analysis-new .see-more,
       /* 最底部-百度教育商务合作、产品代理销售或内容合作等*/
       .business-el-line,
-      .business-el-line-background{
+      .business-el-line-background,
+      /* 展开按钮 */
+      .question-analysis-new .expand{
         display: none !important;
       }
       /* 显示答案及解析 */
       .ques-title.analysis-title + div{
         display: unset !important;
+      }
+      .question-analysis-new .analysis-wrap,
+      #analysis{
+        overflow: unset !important;
+        height: unset !important;
+        max-height: unset !important;
       }
       /* 电脑端 */
       /* 中间弹窗-限时专享福利 */
@@ -3473,7 +3483,7 @@
       }
       if (GM_Menu.get("baijiahao_hijack_wakeup")) {
         log.success(GM_Menu.getShowTextValue("baijiahao_hijack_wakeup"));
-        baiduHijack.hijackFunctionCallByBaiJiaHaoAndMap();
+        baiduHijack.hijackFunctionCall_BaiJiaHao_Map();
       }
       if (GM_Menu.get("baidu_baijiahao_hijack_iframe")) {
         log.success(GM_Menu.getShowTextValue("baidu_baijiahao_hijack_iframe"));
@@ -5153,7 +5163,7 @@
           utils.waitNode(".main-page-wrap").then(() => {
             GM_Menu.add({
               key: "baidu_tieba_lzl_ban_global_back",
-              text: "优化查看楼中楼回复",
+              text: "回退关闭楼中楼回复",
               callback(data) {
                 if (data.enable) {
                   alert(
@@ -5718,8 +5728,9 @@
                 } else {
                   /* 当前是在主页中，搜索按钮判定为搜索吧 */
                   tiebaSearchConfig.frontPageSeach();
-                  utils.listenKeyPress(
+                  utils.listenKeyboard(
                     document.querySelector("#tieba-search"),
+                    "keypress",
                     (keyName) => {
                       if (keyName === "Enter") {
                         tiebaSearchConfig.frontPageSeach();
@@ -6273,9 +6284,10 @@
           document
             .querySelector(".more-btn-desc")
             .addEventListener("click", _click_event_);
-          utils.listenKeyPress(
+          utils.listenKeyboard(
             searchInputElement,
-            (keyName, otherKey, event) => {
+            "keypress",
+            (keyName, keyValue, otherKeyList, event) => {
               if (keyName === "Enter") {
                 _click_event_(event);
               }
@@ -6442,6 +6454,87 @@
             document.querySelector(".app-view")?.__vue__?.forum?.name;
           return tbMobileViewport || mainPageWrap || tbForum || appView;
         },
+        /**
+         * 添加滚动到顶部按钮
+         */
+        addScrollTopButton() {
+          if (!GM_Menu.get("baidu_tieba_add_scroll_top_button_in_forum")) {
+            return;
+          }
+          log.success(
+            GM_Menu.getShowTextValue(
+              "baidu_tieba_add_scroll_top_button_in_forum"
+            )
+          );
+          let isInsertButton = false;
+          let showScrollTopButton = function () {
+            isInsertButton = true;
+            let buttonElement = DOMUtils.parseHTML(
+              `
+            <div class="tb-totop whitesev-tb-totop">
+              <style>
+              .whitesev-tb-totop{
+                position: fixed;
+                right: .09rem;
+                bottom: 1rem;
+                z-index: 1000;
+              }
+              .whitesev-tb-totop .tb-totop__span{
+                display: inline-block;
+                width: .51rem;
+                height: .51rem;
+              }
+              .whitesev-tb-totop .tb-totop__svg{
+                width: 100%;
+                height: 100%;
+              }
+              </style>
+              <span class="tb-totop__span">
+                <svg class="tb-totop__svg">
+                  <use xlink:href="#icon_frs_top_50"></use>
+                </svg>
+              </span>
+            </div>`,
+              true,
+              false
+            );
+            DOMUtils.on(buttonElement, "click", function () {
+              window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: "smooth",
+              });
+            });
+            document.body.appendChild(buttonElement);
+          };
+          let hideScrollTopButton = function () {
+            isInsertButton = false;
+            document.querySelector(".whitesev-tb-totop")?.remove();
+          };
+          let checkScroll = new utils.LockFunction(
+            function () {
+              let scrollTop =
+                window.document.documentElement.scrollTop ||
+                window.document.body.scrollTop;
+              let scrollHeight =
+                window.innerHeight ||
+                document.documentElement.clientHeight ||
+                window.document.body.clientHeight;
+              if (scrollTop > scrollHeight * 2) {
+                /* 页面中不存在该按钮元素才显示 */
+                if (!isInsertButton) {
+                  showScrollTopButton();
+                }
+              } else {
+                /* 隐藏 */
+                hideScrollTopButton();
+              }
+            },
+            this,
+            50
+          );
+          window.addEventListener("scroll", checkScroll.run);
+        },
       };
 
       /**
@@ -6488,6 +6581,11 @@
           enable: true,
         },
         {
+          key: "baidu_tieba_add_scroll_top_button_in_forum",
+          text: "新增贴内滚动到顶部按钮",
+          enable: true,
+        },
+        {
           key: "baidu_tieba_optimize_see_comments",
           text: "优化查看评论",
           enable: true,
@@ -6512,7 +6610,7 @@
       baiduHijack.hijackElementAppendChild();
       if (GM_Menu.get("baidu_tieba_hijack_wake_up")) {
         log.success(GM_Menu.getShowTextValue("baidu_tieba_hijack_wake_up"));
-        baiduHijack.hijackFunctionCallByTiebaWebpack();
+        baiduHijack.hijackFunctionCall_WebPack_TieBa();
       }
       GM_addStyle(this.css.tieba);
       log.info("插入CSS规则");
@@ -6552,6 +6650,9 @@
       ) {
         /* 吧内 */
         tiebaBaNei.rememberPostSort();
+      } else {
+        /* 贴内 */
+        tiebaBusiness.addScrollTopButton();
       }
       if (GM_Menu.get("baidu_tieba_add_search")) {
         log.success(GM_Menu.getShowTextValue("baidu_tieba_add_search"));
@@ -7145,7 +7246,7 @@
       }
       if (GM_Menu.get("baidu_mbd_hijack_wakeup")) {
         log.success(GM_Menu.getShowTextValue("baidu_mbd_hijack_wakeup"));
-        baiduHijack.hijackFunctionCallByBaiJiaHaoAndMap();
+        baiduHijack.hijackFunctionCall_BaiJiaHao_Map();
       }
       if (GM_Menu.get("baidu_mbd_hijack_BoxJSBefore")) {
         log.success(GM_Menu.getShowTextValue("baidu_mbd_hijack_BoxJSBefore"));
@@ -7291,7 +7392,7 @@
       }
       if (GM_Menu.get("baidu_haokan_hijack_wakeup")) {
         log.success(GM_Menu.getShowTextValue("baidu_haokan_hijack_wakeup"));
-        baiduHijack.hijackFunctionCallByHaokanWebpack();
+        baiduHijack.hijackFunctionCall_WebPack_HaoKan();
       }
 
       DOMUtils.ready(function () {
@@ -7531,8 +7632,8 @@
          */
         blockWaterMark() {
           let oldShadow = Element.prototype.attachShadow;
-          Element.prototype.attachShadow = function (...args) {
-            const shadowRoot = oldShadow.call(this, ...args);
+          Element.prototype.attachShadow = function () {
+            const shadowRoot = oldShadow.call(this, arguments);
             this._shadowRoot = shadowRoot;
             shadowRoot.appendChild(
               DOMUtils.createElement(
@@ -7802,11 +7903,11 @@
      */
     hijackCopy() {
       let originApply = Function.prototype.apply;
-      Function.prototype.apply = function (...args) {
+      Function.prototype.apply = function () {
         try {
-          let _Arguments = args[1];
+          let _Arguments = arguments[1];
           if (
-            args.length === 2 &&
+            arguments.length === 2 &&
             typeof _Arguments === "object" &&
             "" + _Arguments === "[object Arguments]" &&
             _Arguments.length === 1 &&
@@ -7830,7 +7931,7 @@
         } catch (error) {
           log.error(error);
         }
-        return originApply.call(this, ...args);
+        return originApply.call(this, ...arguments);
       };
     },
     /**
@@ -7841,11 +7942,11 @@
      */
     hijackFunctionApplyScheme() {
       let originApply = Function.prototype.apply;
-      Function.prototype.apply = function (...args) {
+      Function.prototype.apply = function () {
         try {
-          let _Arguments = args[1];
+          let _Arguments = arguments[1];
           if (
-            args.length === 2 &&
+            arguments.length === 2 &&
             typeof _Arguments === "object" &&
             "" + _Arguments === "[object Arguments]" &&
             _Arguments.length === 2 &&
@@ -7857,7 +7958,7 @@
         } catch (error) {
           log.error(error);
         }
-        return originApply.call(this, ...args);
+        return originApply.call(this, ...arguments);
       };
     },
     /**
@@ -7971,36 +8072,55 @@
      *
      * Function.property.call
      */
-    hijackFunctionCallByTiebaWebpack() {
+    hijackFunctionCall_WebPack_TieBa() {
       /* 劫持webpack */
       let originCall = Function.prototype.call;
-      Function.prototype.call = function (...args) {
-        let result = originCall.apply(this, args);
+      Function.prototype.call = function () {
+        let result = originCall.apply(this, arguments);
         /* 当前i core:67 */
         if (
-          args.length &&
-          args.length === 4 &&
-          args[1]?.exports &&
-          Object.prototype.hasOwnProperty.call(args[1].exports, "getSchema") &&
-          Object.prototype.hasOwnProperty.call(args[1].exports, "getToken") &&
-          Object.prototype.hasOwnProperty.call(args[1].exports, "init") &&
-          Object.prototype.hasOwnProperty.call(args[1].exports, "initDiffer")
+          arguments.length === 4 &&
+          typeof arguments[1]?.exports === "object" &&
+          typeof arguments[1].exports["getSchema"] === "function" &&
+          typeof arguments[1].exports["getToken"] === "function" &&
+          typeof arguments[1].exports["init"] === "function" &&
+          typeof arguments[1].exports["initDiffer"] === "function"
         ) {
-          log.success(["成功劫持webpack关键Scheme调用函数", args]);
-          args[1].exports.getSchema = function () {
+          let codeId = arguments?.[1]?.["i"];
+          log.success(["成功劫持webpack关键Scheme调用函数", arguments]);
+          arguments[1].exports.getSchema = function () {
             log.info(["阻止调用getSchema", ...arguments]);
           };
-          args[1].exports.getToken = function () {
+          arguments[1].exports.getToken = function () {
             log.info(["阻止调用getToken", ...arguments]);
           };
-          args[1].exports.init = function () {
+          arguments[1].exports.init = function () {
             log.info(["阻止初始化", ...arguments]);
+            if (arguments?.[0]?.["page"] === "usercenter") {
+              /* 跳转至用户空间 */
+              let homeUrl =
+                "/home/main?id=" + arguments[0]["param"]["portrait"];
+              log.info(["跳转至用户空间", homeUrl]);
+              window.open(homeUrl);
+            }
             return;
           };
-          args[1].exports.initDiffer = function () {
+          arguments[1].exports.initDiffer = function () {
             log.info(["阻止初始化差异", ...arguments]);
             return;
           };
+          GM_Menu.update({
+            key: "baidu_tieba_hijack_wake_up",
+            text: "劫持唤醒",
+            enable: false,
+            showText(text, enable) {
+              return `${
+                enable
+                  ? GM_Menu.getEnableTrueEmoji()
+                  : GM_Menu.getEnableFalseEmoji()
+              }${text} 🙏 成功劫持：${codeId}`;
+            },
+          });
           return;
         }
         return result;
@@ -8012,23 +8132,24 @@
      *
      * Function.property.call
      */
-    hijackFunctionCallByHaokanWebpack() {
+    hijackFunctionCall_WebPack_HaoKan() {
+      /* 劫持webpack */
       let originCall = Function.prototype.call;
-      Function.prototype.call = function (...args) {
-        /* 当前i core:67 */
-        let result = originCall.apply(this, args);
+      Function.prototype.call = function () {
+        /* 当前i 168 */
+        let result = originCall.apply(this, arguments);
         if (
-          args.length &&
-          args.length === 4 &&
-          args?.[1]?.["exports"] &&
-          Object.prototype.hasOwnProperty.call(
-            args[1]["exports"],
-            "LaunchScheme"
-          ) &&
-          Object.prototype.hasOwnProperty.call(args[1]["exports"], "__esModule")
+          arguments.length === 4 &&
+          arguments[1] != null &&
+          typeof arguments[1].exports === "object" &&
+          arguments[1].exports != null &&
+          typeof arguments[1]["exports"]["LaunchScheme"] === "function" &&
+          typeof arguments[1]["exports"]["__esModule"] === "boolean"
         ) {
-          log.info("成功劫持，当前webpack i:" + args?.[1]?.["i"]);
-          args[1]["exports"]["LaunchScheme"] = function () {
+          let codeId = arguments?.[1]?.["i"];
+          log.info("成功劫持，当前webpack i:" + codeId);
+          log.info(arguments);
+          arguments[1]["exports"]["LaunchScheme"] = function () {
             log.success(["修改参数并劫持唤醒 LaunchScheme"]);
             return {
               launch() {
@@ -8039,6 +8160,18 @@
               },
             };
           };
+          GM_Menu.update({
+            key: "baidu_haokan_hijack_wakeup",
+            text: "劫持唤醒",
+            enable: false,
+            showText(text, enable) {
+              return `${
+                enable
+                  ? GM_Menu.getEnableTrueEmoji()
+                  : GM_Menu.getEnableFalseEmoji()
+              }${text} 🙏 成功劫持：${codeId}`;
+            },
+          });
         }
         return result;
       };
@@ -8049,7 +8182,7 @@
      * + 百度地图(map.baidu.com)
      * Function.property.call
      */
-    hijackFunctionCallByBaiJiaHaoAndMap() {
+    hijackFunctionCall_BaiJiaHao_Map() {
       let originCall = Function.prototype.call;
       Function.prototype.call = function () {
         if (
