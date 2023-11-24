@@ -74,6 +74,8 @@
 // @run-at       document-end
 // @grant        none
 // @license      GPL-3.0
+// @downloadURL https://update.greasyfork.org/scripts/440871/%E9%AA%9A%E6%89%B0%E6%8B%A6%E6%88%AA.user.js
+// @updateURL https://update.greasyfork.org/scripts/440871/%E9%AA%9A%E6%89%B0%E6%8B%A6%E6%88%AA.meta.js
 // ==/UserScript==
 
 (function () {
