@@ -9,6 +9,8 @@
 // @grant        GM_getValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_registerMenuCommand
+// @downloadURL https://update.greasyfork.org/scripts/456542/%E4%BF%BA%E7%9A%84%E6%89%8B%E6%9C%BA%E8%A7%86%E9%A2%91%E8%84%9A%E6%9C%AC.user.js
+// @updateURL https://update.greasyfork.org/scripts/456542/%E4%BF%BA%E7%9A%84%E6%89%8B%E6%9C%BA%E8%A7%86%E9%A2%91%E8%84%9A%E6%9C%AC.meta.js
 // ==/UserScript==
 /*jshint esversion: 8*/
 (function () {
