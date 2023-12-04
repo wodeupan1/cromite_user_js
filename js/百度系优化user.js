@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2023.11.28
+// @version      2023.12.4.20
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -49,7 +49,7 @@
 // @grant        GM_info
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1249086/Viewer.js
-// @require      https://update.greasyfork.org/scripts/455186/1285083/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/455186/1290431/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1274595/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
@@ -1685,7 +1685,9 @@
       .business-el-line,
       .business-el-line-background,
       /* 展开按钮 */
-      .question-analysis-new .expand{
+      .question-analysis-new .expand,
+      /* 7日VIP限免 大学生免费领 */
+      #app .bgk-question-detail .float-fixed{
         display: none !important;
       }
       /* 显示答案及解析 */
@@ -7693,6 +7695,81 @@
       if (!this.url.match(/^http(s|):\/\/easylearn.baidu.com/g)) {
         return;
       }
+
+      const easylearnBusiness = {
+        /**
+         * 显示答案内容
+         */
+        showAnswerContent() {
+          utils.waitNode("div.question-swiper").then(async () => {
+            await utils.waitVueByInterval(
+              function () {
+                return document.querySelector("div.question-swiper");
+              },
+              function (__vue__) {
+                return "$watch" in __vue__;
+              },
+              100,
+              10000
+            );
+            document.querySelector("div.question-swiper").__vue__.$watch(
+              ["isShowAnswer", "isShowAnswerContent"],
+              function (newVal, oldVal) {
+                log.success("显示答案");
+                this.isShowAnswer = true;
+                this.isShowAnswerContent = true;
+              },
+              {
+                deep: true,
+                immediate: true,
+              }
+            );
+          });
+        },
+        /**
+         * 劫持-今日搜题次数已达上限
+         */
+        hijackUserSearchQuestCount() {
+          window.localStorage.removeItem("user_search_quest_count");
+        },
+        /**
+         * 允许使用顶部的输入框
+         */
+        allowUserSearchInput() {
+          utils
+            .waitNodeWithInterval(
+              ".search-input .search-box-wrap.search-box",
+              10000
+            )
+            .then(async () => {
+              await utils.waitVueByInterval(
+                function () {
+                  return document.querySelector(
+                    ".search-input .search-box-wrap.search-box"
+                  );
+                },
+                function (__vue__) {
+                  return "$watch" in __vue__;
+                },
+                250,
+                10000
+              );
+              document
+                .querySelector(".search-input .search-box-wrap.search-box")
+                .__vue__.$watch(
+                  "isFake",
+                  function (newVal, oldVal) {
+                    log.success("允许使用顶部搜索输入框");
+                    this.isFake = false;
+                  },
+                  {
+                    deep: true,
+                    immediate: true,
+                  }
+                );
+            });
+        },
+      };
       GM_addStyle(this.css.easyLearn);
       log.info("插入CSS规则");
       let menuBusiness = [
@@ -7764,7 +7841,8 @@
           text: "【屏蔽】底部工具栏",
           _callback_() {
             GM_addStyle(`
-            .question-bottom-bar{
+            .question-bottom-bar,
+            #app .bgk-question-detail .float-btm{
               display: none !important;
             }
             `);
@@ -7781,30 +7859,10 @@
         log.success(GM_Menu.getShowTextValue(item.key));
         callback();
       });
+      easylearnBusiness.hijackUserSearchQuestCount();
+      easylearnBusiness.showAnswerContent();
       DOMUtils.ready(function () {
-        utils
-          .waitNodeWithInterval(
-            ".search-input .search-box-wrap.search-box",
-            10000
-          )
-          .then(async () => {
-            await utils.waitPropertyByInterval(
-              () => {
-                return document.querySelector(
-                  ".search-input .search-box-wrap.search-box"
-                );
-              },
-              (inputElement) => {
-                return inputElement?.__vue__?.isFake != null;
-              },
-              250,
-              10000
-            );
-            document.querySelector(
-              ".search-input .search-box-wrap.search-box"
-            ).__vue__.isFake = false;
-            log.success("允许使用顶部搜索输入框");
-          });
+        easylearnBusiness.allowUserSearchInput();
       });
     },
   };
