@@ -614,6 +614,8 @@ function kgpingbisgo() {
 "iqiyi.com",
 "tudou.com",
 "qq.com",
+"douyin.com",
+"javascript:",
 "youku.com",
 "sohu.com",
 "pptv.com",
@@ -2583,6 +2585,6 @@ $("#s-hotsearch-wrapperwebbone").remove();
   	  }
 
     }
- //
+
 
     })()
