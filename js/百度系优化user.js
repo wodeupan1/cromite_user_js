@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2023.12.24.18
+// @version      2023.12.26
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -50,9 +50,9 @@
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1249086/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1284140/Message.js
-// @require      https://update.greasyfork.org/scripts/456485/1300442/pops.js
+// @require      https://update.greasyfork.org/scripts/456485/1301774/pops.js
 // @require      https://update.greasyfork.org/scripts/455186/1299890/WhiteSevsUtils.js
-// @require      https://update.greasyfork.org/scripts/465772/1296917/DOMUtils.js
+// @require      https://update.greasyfork.org/scripts/465772/1301773/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
 // ==/UserScript==
@@ -2954,7 +2954,7 @@
          */
         getPageLineElement(_pageText_) {
           return DOMUtils.createElement("div", {
-            class: "whitesev-page-info result-op",
+            className: "whitesev-page-info result-op",
             innerHTML: `
               <div class="whitesev-new-pagenav">
                 <p>${_pageText_}</p>
@@ -3681,26 +3681,11 @@
             </div>
             `;
           }
-          let newCommentElement = DOMUtils.createElement("div", {
-            "data-v-74eb13e2": "",
-            "data-v-602e287c": "",
-            class: "post-item",
-            "data-whitesev": {
-              userId: user_id,
-              userPostId: post_id,
-              userPortrait: userPortrait,
-              userFloor: parseInt(user_floor),
-              userComment: userComment,
-              userHomeUrl: userHomeUrl,
-              userAvatar: userAvatar,
-              userName: userName,
-              userCommentTime: user_comment_time,
-              userIpPosition: user_ip_position,
-              pageCommentList: pageCommentList,
-            },
-            "data-floor": tiebaCommentConfig.floor_num,
-            landlord: is_landlord,
-            innerHTML: `
+          let newCommentElement = DOMUtils.createElement(
+            "div",
+            {
+              className: "post-item",
+              innerHTML: `
               <div
                 data-v-188c0e84=""
                 data-v-74eb13e2=""
@@ -3741,7 +3726,27 @@
                 <div data-v-74eb13e2="" class="post-split-line"></div>
               </div>
               `,
-          });
+              "data-whitesev": {
+                userId: user_id,
+                userPostId: post_id,
+                userPortrait: userPortrait,
+                userFloor: parseInt(user_floor),
+                userComment: userComment,
+                userHomeUrl: userHomeUrl,
+                userAvatar: userAvatar,
+                userName: userName,
+                userCommentTime: user_comment_time,
+                userIpPosition: user_ip_position,
+                pageCommentList: pageCommentList,
+              },
+            },
+            {
+              "data-v-74eb13e2": "",
+              "data-v-602e287c": "",
+              "data-floor": tiebaCommentConfig.floor_num,
+              landlord: is_landlord,
+            }
+          );
           return newCommentElement;
         },
         /**
@@ -3832,13 +3837,16 @@
                 newCommentDOM["data-whitesev"]["pageCommentList"][
                   "commentList"
                 ][newCommentDOM["data-whitesev"]["userPostId"]]["comment_num"];
-              let seeAllReplyElement = DOMUtils.createElement("div", {
-                class: "whitesev-see-all-reply",
-                style: "color: #6251B3;margin-top: 5px 0 0 10px;",
-                innerHTML: `
-                查看全部${lzlCommentNums}条回复
-                `,
-              });
+              let seeAllReplyElement = DOMUtils.createElement(
+                "div",
+                {
+                  className: "whitesev-see-all-reply",
+                  innerHTML: `查看全部${lzlCommentNums}条回复`,
+                },
+                {
+                  style: "color: #6251B3;margin-top: 5px 0 0 10px;",
+                }
+              );
               DOMUtils.on(seeAllReplyElement, "click", function () {
                 lzlPostElement.click();
               });
@@ -4544,8 +4552,14 @@
             log.error("元素#replySwitch不存在");
             return;
           }
-          let onlyLzInnerElement = DOMUtils.createElement("div", {
-            style: `
+          let onlyLzInnerElement = DOMUtils.createElement(
+            "div",
+            {
+              className: "white-only-lz",
+              textContent: "只看楼主",
+            },
+            {
+              style: `
               display: -webkit-flex;
               display: -ms-flexbox;
               display: flex;
@@ -4560,9 +4574,8 @@
               font-size: .13rem;
               color: #614ec2;
             `,
-            class: "white-only-lz",
-            textContent: "只看楼主",
-          });
+            }
+          );
           replySwitchElement.appendChild(onlyLzInnerElement);
           let quxiaoonlylz_css = `
                       .white-only-lz-qx:before {
@@ -4591,8 +4604,13 @@
             log.error("元素#replySwitch不存在");
             return;
           }
-          let btnElement = DOMUtils.createElement("div", {
-            style: `
+          let btnElement = DOMUtils.createElement(
+            "div",
+            {
+              className: "white-btn-comment-reverse",
+            },
+            {
+              style: `
               display: -webkit-flex;
               display: -ms-flexbox;
               display: flex;
@@ -4610,8 +4628,8 @@
               margin-left: auto;
               margin-right: 15px;
             `,
-            class: "white-btn-comment-reverse",
-          });
+            }
+          );
           replySwitchElement.appendChild(btnElement);
           let btnCSS = `
                       .white-btn-comment:before {
@@ -5749,7 +5767,7 @@
             DOMUtils.html(contentElement, "");
             log.success(searchResult);
             let searchElement = DOMUtils.createElement("div", {
-              class: "s_search",
+              className: "s_search",
               innerHTML: `
               搜索类型：
               <input id="nowtb" name="tb" type="radio"checked="checked">
@@ -5758,7 +5776,7 @@
               <label for="searchtb">全吧搜索</label>`,
             });
             let orderElement = DOMUtils.createElement("div", {
-              class: "s_order",
+              className: "s_order",
               innerHTML: `
               排序结果：
               <a>按时间倒序</a>
@@ -7066,7 +7084,7 @@
         .then((element) => {
           log.success("重构主页的识图一下");
           let uploadImageDivDOM = DOMUtils.createElement("div", {
-            class: "vf-home-booth-camera",
+            className: "vf-home-booth-camera",
           });
           DOMUtils.css(uploadImageDivDOM, {
             position: "absolute",
@@ -7094,7 +7112,7 @@
       utils.waitNode(".vf-home.view-page").then((element) => {
         log.success("重构主页的往下滑动右下角出现的搜索图标按钮");
         let divHomeCamera = DOMUtils.createElement("div", {
-          class: "whitesev-vf-home-camera",
+          className: "whitesev-vf-home-camera",
         });
         DOMUtils.css(divHomeCamera, {
           display: "none",
@@ -7139,7 +7157,7 @@
       /* 在已搜索出相关结果的界面中的重构【重拍】按钮 */
       utils.waitNode("#viewport .graph-imagecut-banner-ctn").then((element) => {
         let retakeDivDOM = DOMUtils.createElement("div", {
-          class: "retake-image",
+          className: "retake-image",
           textContent: "重拍",
         });
         DOMUtils.css(retakeDivDOM, {
@@ -7166,12 +7184,17 @@
         }, 2000);
       });
       DOMUtils.ready(function () {
-        let uploadImageInput = DOMUtils.createElement("input", {
-          id: "whitesev-upload-image",
-          type: "file",
-          accept: "image/*",
-          style: "display: none",
-        });
+        let uploadImageInput = DOMUtils.createElement(
+          "input",
+          {
+            id: "whitesev-upload-image",
+          },
+          {
+            type: "file",
+            accept: "image/*",
+            style: "display: none",
+          }
+        );
         DOMUtils.on(uploadImageInput, "change", uploadImage);
         DOMUtils.append(document.body, uploadImageInput);
       });
@@ -7297,10 +7320,15 @@
               let _window = iframeElement.contentWindow;
               function callback() {
                 _document.head.appendChild(
-                  DOMUtils.createElement("style", {
-                    type: "text/css",
-                    innerHTML: hideCSS,
-                  })
+                  DOMUtils.createElement(
+                    "style",
+                    {
+                      innerHTML: hideCSS,
+                    },
+                    {
+                      type: "text/css",
+                    }
+                  )
                 );
               }
               function completed() {
