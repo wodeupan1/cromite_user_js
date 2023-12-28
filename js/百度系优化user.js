@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2023.12.27
+// @version      2023.12.28
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -52,8 +52,8 @@
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1249086/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1284140/Message.js
-// @require      https://update.greasyfork.org/scripts/456485/1301774/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1299890/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/456485/1302638/pops.js
+// @require      https://update.greasyfork.org/scripts/455186/1302637/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1301773/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
@@ -4353,6 +4353,9 @@
           let lzlPage = 2;
           /* 处理楼中楼的滚动加载更多回复 */
           let lzlReplyCommentScrollEvent = async function (event) {
+            /**
+             * @type {HTMLElement}
+             */
             let scrollElement = event.target;
             if (
               scrollElement.scrollTop + scrollElement.clientHeight + 50 <
@@ -4367,7 +4370,7 @@
               data["userPostId"],
               lzlPage
             );
-            log.success(replyInfo);
+            log.success(["加载更多回复的数据", replyInfo]);
             if (replyInfo === "暂无更多回复") {
               log.error("暂无更多回复");
               lzlLoadingView.setText("暂无更多回复");
@@ -4382,15 +4385,41 @@
               return;
             }
             replyInfo["data"].forEach((item) => {
+              /* 判断是否是楼主 */
+              let isLandlord = false;
+              if (landlordInfo) {
+                if (landlordInfo.id === item["user_id"]) {
+                  isLandlord = true;
+                } else if (
+                  utils.isNotNull(item["userPortrait"]) &&
+                  landlordInfo.portrait.includes(item["userPortrait"])
+                ) {
+                  /* 用includes是因为landlordInfo.portrait获取到的后面可能会带时间参数?t=1660430754 */
+                  isLandlord = true;
+                }
+              }
               let lastCommentHTML = `
               <div class="whitesev-reply-dialog-sheet-other-content-item">
-                <div class="whitesev-reply-dialog-user-line" data-portrait="${item["userPortrait"]}">
-                  <div class="whitesev-reply-dialog-avatar" style="background-image: url(${item["userAvatar"]});"></div>
+                <div class="whitesev-reply-dialog-user-line" data-portrait="${
+                  item["userPortrait"]
+                }">
+                  <div class="whitesev-reply-dialog-avatar" style="background-image: url(${
+                    item["userAvatar"]
+                  });"></div>
                   <div class="whitesev-reply-dialog-user-info">
-                    <div class="whitesev-reply-dialog-user-username">${item["userName"]}</div>
+                    <div class="whitesev-reply-dialog-user-username">
+                    ${item["userName"]}
+                    ${
+                      isLandlord
+                        ? `<svg data-v-188c0e84="" class="landlord"><use xlink:href="#icon_landlord"></use></svg>`
+                        : ""
+                    }
+                    </div>
                   </div>
                 </div>
-                <div class="whitesev-reply-dialog-user-comment">${item["userReplyContent"]}</div>
+                <div class="whitesev-reply-dialog-user-comment">${
+                  item["userReplyContent"]
+                }</div>
                 <div class="whitesev-reply-dialog-user-desc-info">
                     <span data-time="">${item["userReplyTime"]}</span>
                     <span data-ip=""></span>
@@ -4488,6 +4517,16 @@
          * @param {string} tid 帖子id
          * @param {string} pid 回复主体id
          * @param {string|Number} pn 当前页
+         * @returns {Promise<{
+         * data: {
+         * userAvatar: string,
+         * userHomeUrl: string,
+         * userName:string,
+         * userPortrait: string,
+         * userPostId: number,
+         * userReplyContent: string,
+         * userReplyTime: string,
+         * }[]}>}
          */
         async getLzlCommentReply(tid = "", pid = "", pn = 1) {
           let getResp = await httpx.get({
