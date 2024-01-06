@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.1.4
+// @version      2024.1.6
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -52,9 +52,9 @@
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1284140/Message.js
-// @require      https://update.greasyfork.org/scripts/456485/1306546/pops.js
+// @require      https://update.greasyfork.org/scripts/456485/1307142/pops.js
 // @require      https://update.greasyfork.org/scripts/455186/1305491/WhiteSevsUtils.js
-// @require      https://update.greasyfork.org/scripts/465772/1305501/DOMUtils.js
+// @require      https://update.greasyfork.org/scripts/465772/1307066/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
 // ==/UserScript==
@@ -1976,7 +1976,8 @@
         parseDOMAttrOriginUrl(targetNode) {
           let url = null;
           let dataLog = targetNode.getAttribute("data-log");
-          if (dataLog) {
+          if (dataLog && dataLog !== "{") {
+            /* 百度在a标签上的data-log="{" */
             try {
               dataLog = utils.toJSON(dataLog);
               url = dataLog.mu;
@@ -3055,6 +3056,9 @@
           }
           if (PopsPanel.getValue("baidu_search_hijack__onClick")) {
             baiduHijack.hijack_onClick("baidu_search_hijack__onClick");
+          }
+          if (PopsPanel.getValue("baidu_search_hijack_setTimeout")) {
+            baiduHijack.hijackSetTimeout("getGeoLocation|loopPlay()");
           }
         },
       };
@@ -8290,6 +8294,13 @@
                   undefined,
                   "优化搜索结果跳转"
                 ),
+                PopsPanel.getSwtichDetail(
+                  "劫持-setTimeout",
+                  "baidu_search_hijack_setTimeout",
+                  false,
+                  undefined,
+                  "可阻止获取定位、视频播放"
+                ),
               ],
             },
           ],
@@ -9320,6 +9331,7 @@
     /**
      * 劫持全局setTimeout
      * + 百度地图(map.baidu.com)
+     * + 百度搜索(m.baidu.com|www.baidu.com)
      *
      * window.setTimeout
      * @param {RegExp|string} [matchStr=""] 需要进行匹配的函数字符串
