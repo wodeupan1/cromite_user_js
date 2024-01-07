@@ -51,9 +51,9 @@
 // @grant        GM_info
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
-// @require      https://update.greasyfork.org/scripts/462234/1284140/Message.js
+// @require      https://update.greasyfork.org/scripts/462234/1307862/Message.js
 // @require      https://update.greasyfork.org/scripts/456485/1307606/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1307607/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/455186/1307823/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1307605/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
