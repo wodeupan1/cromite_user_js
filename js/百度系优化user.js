@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         【移动端】-百度系优化
-// @icon         https://www.baidu.com/favicon.ico
+// @name         【移动端】百度系优化
+// @icon         https://m.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.1.21
+// @version      2024.1.23
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -55,8 +55,8 @@
 // @require      https://update.greasyfork.org/scripts/456485/1315529/pops.js
 // @require      https://update.greasyfork.org/scripts/455186/1314984/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1313623/DOMUtils.js
-// @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
-// @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91-%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
+// @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
+// @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
 // ==/UserScript==
 
 (function () {
@@ -7693,7 +7693,7 @@
     showPanel() {
       pops.panel({
         title: {
-          text: `${GM_info?.script?.name || "【移动端】-百度系优化"}-设置`,
+          text: `${GM_info?.script?.name || "【移动端】百度系优化"}-设置`,
           position: "center",
         },
         content: this.getContent(),
