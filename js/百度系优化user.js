@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.2.4
+// @version      2024.2.6.19
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -27,8 +27,8 @@
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1322684/Message.js
-// @require      https://update.greasyfork.org/scripts/456485/1322734/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1321476/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/456485/1323788/pops.js
+// @require      https://update.greasyfork.org/scripts/455186/1323854/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1318702/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
@@ -2409,10 +2409,6 @@
         }
       } else {
         /* 默认的百度搜索 */
-        if (!PopsPanel.getValue("baidu_search_show_log")) {
-          log.error("禁止控制台输出日志");
-          log.disable();
-        }
         if (PopsPanel.getValue("baidu_search_disable_autoplay_video")) {
           log.success("【禁止】自动播放视频");
           let funcLock = new utils.LockFunction(
@@ -4929,14 +4925,22 @@
             if (!respArrayBuffer) {
               log.error("获取ArrayBuffer失败");
             }
-            let decoder = new TextDecoder("gbk");
+            let encoding = "gb18030";
+            if (
+              getResp.headers.has("Content-Type") &&
+              getResp.headers.get("Content-Type").includes("charset=utf-8")
+            ) {
+              encoding = "utf-8";
+            }
+            log.info("当前编码：" + encoding);
+            let decoder = new TextDecoder(encoding);
             let respText = decoder.decode(respArrayBuffer);
             if (!getResp.ok) {
               if (respText.trim() === "") {
                 log.error("获取内容为空，可能触发了百度校验，请刷新网页再试");
                 return "获取内容为空，可能触发了百度校验，请刷新网页再试";
               }
-              if (respText.match("wappass.baidu.com")) {
+              if (respText.match("wappass.baidu.com") || respText.match("https://seccaptcha.baidu.com/v1/webapi/verint/svcp.html")) {
                 let wappassUrl = respText.match(/href="(.*?)"/)[1];
                 log.error("触发百度校验: " + wappassUrl);
                 window.location.href = wappassUrl;
@@ -7750,6 +7754,7 @@
             toClose: true,
           },
         },
+        isMobile: true,
         width: "92vw",
         height: "80vh",
         drag: true,
@@ -7898,11 +7903,6 @@
                   "与上面的【自动点击翻页】冲突"
                 ),
                 PopsPanel.getSwtichDetail(
-                  "console/控制台允许输出日志",
-                  "baidu_search_show_log",
-                  false
-                ),
-                PopsPanel.getSwtichDetail(
                   "同步地址",
                   "baidu_search_sync_next_page_address",
                   false,
@@ -7912,12 +7912,15 @@
                         "开启后，且开启【自动翻页】，当自动加载到第N页时，浏览器地址也会跟随改变，刷新网页就是当前加载的第N页"
                       );
                     }
-                  }
+                  },
+                  "地址同步自动翻页的地址"
                 ),
                 PopsPanel.getSwtichDetail(
-                  "优化大家还在搜",
+                  "【优化】大家还在搜",
                   "baidu_search_refactor_everyone_is_still_searching",
-                  true
+                  true,
+                  void 0,
+                  "正确新标签页打开搜索"
                 ),
               ],
             },
