@@ -27,8 +27,8 @@
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1322684/Message.js
-// @require      https://update.greasyfork.org/scripts/456485/1323788/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1323854/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/456485/1324038/pops.js
+// @require      https://update.greasyfork.org/scripts/455186/1323906/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1318702/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
@@ -4940,7 +4940,12 @@
                 log.error("获取内容为空，可能触发了百度校验，请刷新网页再试");
                 return "获取内容为空，可能触发了百度校验，请刷新网页再试";
               }
-              if (respText.match("wappass.baidu.com") || respText.match("https://seccaptcha.baidu.com/v1/webapi/verint/svcp.html")) {
+              if (
+                respText.match("wappass.baidu.com") ||
+                respText.match(
+                  "https://seccaptcha.baidu.com/v1/webapi/verint/svcp.html"
+                )
+              ) {
                 let wappassUrl = respText.match(/href="(.*?)"/)[1];
                 log.error("触发百度校验: " + wappassUrl);
                 window.location.href = wappassUrl;
