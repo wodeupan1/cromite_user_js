@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.2.11.12
+// @version      2024.2.14.19
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -27,7 +27,7 @@
 // @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1322684/Message.js
 // @require      https://update.greasyfork.org/scripts/456485/1324038/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1325839/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/455186/1327170/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1318702/DOMUtils.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
@@ -2365,7 +2365,14 @@
        * 处理劫持
        */
       const handleHijack = {
-        run() {
+        init() {
+          if (PopsPanel.getValue("baidu_search_hijack_define")) {
+            Object.defineProperty(unsafeWindow, "define", {
+              get(...args) {
+                return function (...args) {};
+              },
+            });
+          }
           if (PopsPanel.getValue("baidu_search_hijack_openbox")) {
             baiduHijack.hijackOpenBox();
           }
@@ -2404,6 +2411,7 @@
           `);
         }
       } else {
+        handleHijack.init();
         /* 默认的百度搜索 */
         handleEveryOneSearch.refactorEveryoneIsStillSearching =
           PopsPanel.getValue(
@@ -2583,7 +2591,9 @@
      * + isShowModal 是否显示需要登录的弹窗【继续操作需要登录贴吧账号】
      */
     tieba() {
-      if (!this.url.match(/^http(s|):\/\/(tieba.baidu|www.tieba).com/g)) {
+      if (
+        !this.url.match(/^http(s|):\/\/(tieba.baidu|www.tieba|ala.baidu).com/g)
+      ) {
         return;
       }
 
@@ -2975,8 +2985,6 @@
           let timeStamp = Date.now();
           let nextPageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
           let nextPageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
-          log.info("请求下一页评论的url: " + nextPageUrl);
-          log.info("帖子所有评论的url: " + nextPageAllCommentUrl);
           let pageDOM = await tiebaCommentConfig.getPageComment(nextPageUrl);
           let pageCommentList = await tiebaCommentConfig.getPageCommentList(
             nextPageAllCommentUrl
@@ -3046,8 +3054,6 @@
           let timeStamp = Date.now();
           let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
           let pageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
-          log.info("请求上一页评论的url: " + pageUrl);
-          log.info("帖子所有评论的url: " + pageAllCommentUrl);
           let pageDOM = await tiebaCommentConfig.getPageComment(pageUrl);
           let pageCommentList = await tiebaCommentConfig.getPageCommentList(
             pageAllCommentUrl
@@ -3192,8 +3198,7 @@
             let childSpanElementList = Array.from(
               ele_tail_wrap.querySelectorAll("span")
             );
-            for (let index = 0; index < childSpanElementList.length; index++) {
-              let childSpanElement = childSpanElementList[index];
+            for (const childSpanElement of childSpanElementList) {
               if (childSpanElement.hasAttribute("class")) {
                 continue;
               }
@@ -3269,6 +3274,19 @@
               userAvatarObj.pathname.match(/\/item\/(.+)/i);
             if (userAvatarObjMatch) {
               userPortrait = userAvatarObjMatch[1];
+            }
+          }
+          if (PopsPanel.getValue("baidu_tieba_shield_commnets_baodating")) {
+            /* 屏蔽贴吧包打听 */
+            if (user_id != null && user_id.toString() === "6421022725") {
+              return;
+            } else if (
+              userPortrait != null &&
+              userPortrait
+                .toString()
+                .includes("tb.1.4c46bb61.pOGb2yswbMUBKOIUpteLvg")
+            ) {
+              return;
             }
           }
           let post_id = data_field["content"]["post_id"];
@@ -4366,7 +4384,7 @@
           }
           let getResp = await httpx.get(getDetails);
           let respData = getResp.data;
-          log.success(["获取第一页的评论", respData]);
+          log.success(["获取评论", getResp]);
           if (getResp.status) {
             let pageCommentHTMLElement = DOMUtils.parseHTML(
               respData.responseText,
@@ -4420,6 +4438,7 @@
               Referer: "tieba.baidu.com",
             },
           });
+          log.info(["获取楼中楼评论", getResp]);
           let respData = getResp.data;
           if (getResp.status) {
             let data = utils.toJSON(respData.responseText);
@@ -4429,7 +4448,7 @@
               userList: data["data"]["user_list"],
             };
           } else if (getResp.type === "onerror") {
-            log.error("取第一页的评论的评论数据失败 👇");
+            log.error("获取楼中楼评论数据失败 👇");
             log.error(getResp);
           }
         },
@@ -4511,7 +4530,7 @@
             log.error("评论数据获取失败");
             return;
           }
-          log.info("成功获取第一页评论和其第一页的楼中楼评论");
+          log.info("成功获取第一页评论和楼中楼评论");
           let jumpInputBrightDOM = pageDOM.querySelector(".jump_input_bright");
           tiebaCommentConfig.maxPage = 1;
           if (jumpInputBrightDOM) {
@@ -4586,7 +4605,7 @@
             log.error("评论数据获取失败");
             return;
           }
-          log.info("成功获取第一页评论和其第一页的楼中楼评论");
+          log.info("成功获取第一页评论和楼中楼评论");
           tiebaCommentConfig.maxPage = 1;
           let jumpInputBrightDOM = pageDOM.querySelector(".jump_input_bright");
           if (jumpInputBrightDOM) {
@@ -6403,7 +6422,11 @@
       }
       GM_addStyle(this.css.tieba);
       log.info("插入CSS规则");
-      if (this.url.match(/^http(s|):\/\/(tieba.baidu|www.tieba).com\/p\//g)) {
+      if (
+        this.url.match(
+          /^http(s|):\/\/(tieba.baidu|www.tieba|ala.baidu).com\/p\//g
+        )
+      ) {
         if (PopsPanel.getValue("baidu_tieba_optimize_see_comments")) {
           log.success("优化查看评论");
           tiebaCommentConfig.init();
@@ -6419,14 +6442,18 @@
       }
       if (
         this.url.match(
-          /^http(s|):\/\/(tieba.baidu|www.tieba).com\/mo\/q\/newtopic\/topicTemplate/g
+          /^http(s|):\/\/(tieba.baidu|www.tieba|ala.baidu).com\/mo\/q\/newtopic\/topicTemplate/g
         )
       ) {
         if (PopsPanel.getValue("baidu_tieba_topic_redirect_jump")) {
           tiebaHome.redirectJump();
         }
       }
-      if (this.url.match(/^http(s|):\/\/(tieba.baidu|www.tieba).com\/f\?/g)) {
+      if (
+        this.url.match(
+          /^http(s|):\/\/(tieba.baidu|www.tieba|ala.baidu).com\/f\?/g
+        )
+      ) {
         /* 吧内 */
         if (PopsPanel.getValue("baidu_tieba_remember_user_post_sort")) {
           tiebaBaNei.rememberPostSort();
@@ -7955,6 +7982,13 @@
               type: "forms",
               forms: [
                 PopsPanel.getSwtichDetail(
+                  "劫持-define函数",
+                  "baidu_search_hijack_define",
+                  false,
+                  void 0,
+                  "开启后将禁止原有的define"
+                ),
+                PopsPanel.getSwtichDetail(
                   "劫持-复制",
                   "baidu_search_hijack_copy",
                   false,
@@ -8400,6 +8434,13 @@
                   true,
                   void 0,
                   "点击头像正确跳转至用户主页"
+                ),
+                PopsPanel.getSwtichDetail(
+                  "屏蔽机器人",
+                  "baidu_tieba_shield_commnets_baodating",
+                  true,
+                  void 0,
+                  "屏蔽【贴吧包打听】机器人，回答的评论都是牛头不对马嘴的"
                 ),
                 PopsPanel.getSwtichDetail(
                   "实验性-请求携带Cookie",
@@ -9101,7 +9142,7 @@ remove-child##[class*='-video-player']`,
             });
           }
         } catch (error) {
-          log.error(error);
+          //log.error(error);
         }
         return originApply.call(this, ...arguments);
       };
@@ -9165,7 +9206,7 @@ remove-child##[class*='-video-player']`,
             return;
           }
         } catch (error) {
-          log.error(error);
+          /*log.error(error);*/
         }
         return originApply.call(this, ...arguments);
       };
