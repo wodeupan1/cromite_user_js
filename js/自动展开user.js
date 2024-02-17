@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         自动展开
-// @version      1.3.68
+// @version      1.3.69
 // @namespace    https://github.com/AirBashX/AutoUnfold/
 // @homepageURL  https://github.com/AirBashX/UserScript
 // @author       airbash
@@ -68,6 +68,7 @@
 // @match        *://mguba.eastmoney.com/*
 // @match        *://emcreative.eastmoney.com/*
 // @match        *://*.ximalaya.com/*
+// @match        *://gushiwen.cn/*
 // @match        *://*.it1352.com/*
 // @match        *://www.taodudu.cc/news/*
 // @match        *://programmercarl.com/*
@@ -379,7 +380,7 @@
 			],
 			fun: function () {
 				//点击加载更多
-				let button = document.querySelector('.yx-load-more-inner');
+				let button = document.querySelector(".yx-load-more-inner");
 				button.dispatchEvent(new Event("tap"));
 			},
 		},
@@ -482,12 +483,12 @@
 				//点击展开全文:狐猴浏览器特有bug
 				{
 					type: "height",
-					item: "#mainContentContainer"
+					item: "#mainContentContainer",
 				},
 				{
 					type: "display",
-					item: ".foldMaskWrapper"
-				}
+					item: ".foldMaskWrapper",
+				},
 			],
 		},
 		{
@@ -547,15 +548,14 @@
 		{
 			name: "搜狐新闻",
 			url: "sohu.com/a",
-			handles: [
-			],
-			fun:function () {
-				onload=function () {
+			handles: [],
+			fun: function () {
+				onload = function () {
 					let item = document.querySelector("#artLookAll");
 					item.click();
 					clearInterval(interval);
-				}
-			}
+				};
+			},
 		},
 		{
 			name: "腾讯新闻",
@@ -1281,6 +1281,18 @@
 			},
 		},
 		{
+			name: "古诗文网",
+			url: "gushiwen.cn/",
+			handles: [],
+			fun: function () {
+				let items = document.evaluate("//a[contains(text(), '阅读全文')]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+				for (let i = 0; i < items.snapshotLength; i++) {
+					items.snapshotItem(i).click();
+					clearInterval(interval);
+				}
+			},
+		},
+		{
 			name: "淘嘟嘟",
 			url: "www.taodudu.cc/news/",
 			handles: [
@@ -1411,7 +1423,7 @@
 							for (let item of items) {
 								item.classList.remove(handle.remove);
 							}
-						} else if (handle.type == "click")  {
+						} else if (handle.type == "click") {
 							//模拟一次点击
 							for (let item of items) {
 								if (item != null && item.getAttribute("opened") != "yes") {
@@ -1419,7 +1431,7 @@
 									item.setAttribute("opened", "yes");
 								}
 							}
-						}else {
+						} else {
 							//模拟多次点击
 							for (let item of items) {
 								if (item) {
