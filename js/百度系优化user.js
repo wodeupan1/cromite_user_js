@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.3.12
+// @version      2024.3.13.19
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -28,18 +28,23 @@
 // @grant        unsafeWindow
 // @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1322684/Message.js
-// @require      https://update.greasyfork.org/scripts/456485/1341796/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1341797/WhiteSevsUtils.js
-// @require      https://update.greasyfork.org/scripts/465772/1341795/DOMUtils.js
+// @require      https://update.greasyfork.org/scripts/456485/1342149/pops.js
+// @require      https://update.greasyfork.org/scripts/455186/1342261/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/465772/1342148/DOMUtils.js
 // @require      https://update.greasyfork.org/scripts/488179/1332779/showdown.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
 // ==/UserScript==
 
 (function () {
-  if(typeof unsafeWindow === "undefined"){
+  if (typeof unsafeWindow === "undefined") {
     unsafeWindow = globalThis;
   }
+  const UnSafeWindowObjectDefineProperty = unsafeWindow.Object.defineProperty;
+  const ObjectDefineProperty = Object.defineProperty;
+  const ObjectKeys = Object.keys;
+  const ObjectValues = Object.values;
+  const ObjectAssign = Object.assign;
   /**
    * 是否为调试模式
    */
@@ -402,6 +407,11 @@
      * window.location.href
      */
     url: window.location.href,
+    $data: {
+      search: {
+        isHijack_onClick: false,
+      },
+    },
     init() {
       this.search();
       this.searchHome();
@@ -1747,7 +1757,10 @@
         /**
          * 是否重构大家都在搜
          */
-        refactorEveryoneIsStillSearching: false,
+        refactorEveryoneIsStillSearching: PopsPanel.getValue(
+          "baidu_search_refactor_everyone_is_still_searching",
+          false
+        ),
         /**
          * 处理底部的
          * @param {NodeList} bottomElement
@@ -1861,7 +1874,7 @@
        * 点击输入框，输入其它文字，有提示，禁止百度篡改，且极大地增加搜索速度
        */
       const handleInputEvent = {
-        run() {
+        init() {
           let suggestListSelector = "#se-box .suggest-content";
           let suggestListBtnSelectorList = "#se-box .suggest-content button";
           let suggestList2Selector = "#se-box2 .suggest-content";
@@ -2367,11 +2380,14 @@
       const handleHijack = {
         init() {
           if (PopsPanel.getValue("baidu_search_hijack_define")) {
-            Object.defineProperty(unsafeWindow, "define", {
+            UnSafeWindowObjectDefineProperty(unsafeWindow, "define", {
               get(...args) {
                 return function (...args) {};
               },
             });
+          }
+          if (PopsPanel.getValue("baidu_search_hijack__onClick")) {
+            BaiduHijack.hijack_onClick("baidu_search_hijack__onClick");
           }
           if (PopsPanel.getValue("baidu_search_hijack_openbox")) {
             BaiduHijack.hijackOpenBox();
@@ -2381,9 +2397,6 @@
           }
           if (PopsPanel.getValue("baidu_search_hijack_copy")) {
             BaiduHijack.hijackCopy();
-          }
-          if (PopsPanel.getValue("baidu_search_hijack__onClick")) {
-            BaiduHijack.hijack_onClick("baidu_search_hijack__onClick");
           }
           if (PopsPanel.getValue("baidu_search_hijack_setTimeout")) {
             BaiduHijack.hijackSetTimeout("getGeoLocation|loopPlay()");
@@ -2399,61 +2412,148 @@
           return PopsPanel.getValue("baidu-search-user-style", "");
         },
       };
-
-      log.info("插入用户CSS规则");
-      GM_addStyle(handleUserOwnStyle.getUserStyle());
-      if (window.location.pathname.startsWith("/bh")) {
-        /* 百度健康 */
-        log.info("插入CSS规则");
-        GM_addStyle(this.css.searchBaiduHealth);
-
-        if (PopsPanel.getValue("baidu_search_headlth_shield_other_info")) {
+      /**
+       * 百度健康
+       */
+      const BaiduHeadlth = {
+        init() {
+          if (PopsPanel.getValue("baidu_search_headlth_shield_other_info")) {
+            this.shieldOtherInfo();
+          }
+          if (
+            PopsPanel.getValue("baidu_search_headlth_shield_bottom_toolbar")
+          ) {
+            this.shieldServiceButtonsRow();
+          }
+        },
+        /**
+         * 【屏蔽】底部其它信息
+         */
+        shieldOtherInfo() {
           GM_addStyle(`
           article[class] > div[class^="index_container"]{
             display: none !important;
           }
           `);
-        }
-        if (PopsPanel.getValue("baidu_search_headlth_shield_bottom_toolbar")) {
+        },
+        /**
+         * 【屏蔽】底部工具栏
+         */
+        shieldServiceButtonsRow() {
           GM_addStyle(`
-          article[class] > div[class^="index_healthServiceButtonsRow"]{
-            display: none !important;
+            article[class] > div[class^="index_healthServiceButtonsRow"]{
+              display: none !important;
+            }
+            `);
+        },
+      };
+      const BaiDuSearch = {
+        init() {
+          if (PopsPanel.getValue("baidu_search_hijack__onClick_to_blank")) {
+            this.openResultBlank();
           }
-          `);
-        }
+        },
+        /**
+         * 新标签页打开
+         */
+        openResultBlank() {
+          function globalResultClickEvent(event) {
+            utils.preventEvent(event);
+            let url = null;
+            let srcElement = event.srcElement;
+            if (srcElement) {
+              if (srcElement.closest("a")) {
+                let anchorNode = srcElement.closest("a");
+                if (utils.isNotNull(anchorNode.href)) {
+                  log.info([
+                    "链接来自上层a元素",
+                    [event, srcElement, anchorNode],
+                  ]);
+                  url = anchorNode.href;
+                }
+              } else if (srcElement.closest("[rl-link-href]")) {
+                let rlLinkHrefNode = srcElement.closest("[rl-link-href]");
+                let rlLinkHref = rlLinkHrefNode.getAttribute("rl-link-href");
+                if (utils.isNotNull(rlLinkHref)) {
+                  log.info([
+                    "链接来自上层含有[rl-link-href]属性的元素",
+                    [event, srcElement, rlLinkHrefNode],
+                  ]);
+                  url = rlLinkHref;
+                }
+              }
+            } else {
+              let $resultNode = event.target.querySelector("article");
+              url = $resultNode.getAttribute("rl-link-href");
+              log.info([
+                "链接来自顶层向下寻找article元素",
+                [event, event.target, $resultNode],
+              ]);
+            }
+            if (utils.isNull(url)) {
+            }
+            log.success(["捕捉的点击事件，新标签页打开", [url]]);
+            window.open(url, "_blank");
+          }
+          DOMUtils.on(
+            document,
+            "click",
+            ".c-result.result",
+            globalResultClickEvent
+          );
+        },
+      };
+      if (window.location.pathname.startsWith("/bh")) {
+        /* 百度健康 */
+        log.info("插入CSS规则");
+        GM_addStyle(this.css.searchBaiduHealth);
+        BaiduHeadlth.init();
       } else {
         handleHijack.init();
+        BaiDuSearch.init();
         /* 默认的百度搜索 */
-        handleEveryOneSearch.refactorEveryoneIsStillSearching =
-          PopsPanel.getValue(
-            "baidu_search_refactor_everyone_is_still_searching"
-          );
         log.info("插入CSS规则");
         GM_addStyle(this.css.search);
         DOMUtils.ready(function () {
-          let searchUpdateRealLink = new utils.LockFunction(async () => {
-            try {
-              await handleItemURL.replaceLink();
-            } catch (error) {
-              log.error(["替换为真实链接失败", error]);
-            }
-          }, 600);
-          let removeAdsLockFunction = new utils.LockFunction(
-            handleItemURL.removeAds,
-            600
+          handleItemURL.originURLMap =
+            handleItemURL.parseScriptDOMOriginUrlMap(document);
+          let baidu_search_handle_search_result_enable = PopsPanel.getValue(
+            "baidu_search_handle_search_result",
+            true
           );
-          utils.waitNode("div#page.search-page").then((element) => {
-            utils.mutationObserver(element, {
-              callback: async () => {
-                await searchUpdateRealLink.run();
-                removeAdsLockFunction.run();
-              },
-              config: {
-                childList: true,
-                subtree: true,
-              },
+          if (baidu_search_handle_search_result_enable) {
+            let searchUpdateRealLink = new utils.LockFunction(async () => {
+              try {
+                await handleItemURL.replaceLink();
+              } catch (error) {
+                log.error(["替换为真实链接失败", error]);
+              }
+            }, 600);
+            let removeAdsLockFunction = new utils.LockFunction(
+              handleItemURL.removeAds,
+              600
+            );
+            utils.waitNode("div#page.search-page").then((element) => {
+              utils.mutationObserver(element, {
+                callback: async () => {
+                  if (baidu_search_handle_search_result_enable) {
+                    await searchUpdateRealLink.run();
+                  }
+                  removeAdsLockFunction.run();
+                },
+                config: {
+                  childList: true,
+                  subtree: true,
+                },
+              });
             });
-          });
+
+            if (baidu_search_handle_search_result_enable) {
+              searchUpdateRealLink.run();
+            }
+            removeAdsLockFunction.run();
+          }
+
           utils
             .waitNodeList("style[class^='vsearch-sigma-style']")
             .then((nodeList) => {
@@ -2461,13 +2561,14 @@
               log.success(["删除sigma的CSS", nodeList]);
               nodeList.forEach((item) => item.remove());
             });
-          handleItemURL.originURLMap =
-            handleItemURL.parseScriptDOMOriginUrlMap(document);
-          handleItemURL.removeAds();
+
+          if (PopsPanel.getValue("baidu_search_redirect_top_link")) {
+            handleItemURL.redirectTopLink();
+          }
           handleItemURL.replaceScriptBaiDuTip();
-          handleItemURL.redirectTopLink();
-          handleInputEvent.run();
-          searchUpdateRealLink.run();
+          if (PopsPanel.getValue("baidu_search_refactoring_input_boxes")) {
+            handleInputEvent.init();
+          }
           if (
             PopsPanel.getValue("baidu_search_automatically_expand_next_page")
           ) {
@@ -2503,6 +2604,8 @@
           }
         });
       }
+      log.info("插入用户CSS规则");
+      GM_addStyle(handleUserOwnStyle.getUserStyle());
     },
     /**
      * 百家号
@@ -3160,7 +3263,7 @@
          */
         getNewCommentInnerElement: (element, pageCommentList) => {
           let data_field = utils.toJSON(element.getAttribute("data-field"));
-          if (Object.keys(data_field).length == 0) {
+          if (ObjectKeys(data_field).length == 0) {
             return;
           }
           let user_id = data_field["author"]["user_id"];
@@ -6152,7 +6255,7 @@
                   return;
                 }
                 log.success(["请求本贴图片信息", result]);
-                Object.values(result["pic_list"]).forEach((item) => {
+                ObjectValues(result["pic_list"]).forEach((item) => {
                   /* 图片id */
                   let id =
                     item?.["img"]?.["original"]?.["id"] ||
@@ -6582,7 +6685,7 @@
       log.info("插入CSS规则");
       if (PopsPanel.getValue("baidu_baike_automatically_expand_next_page")) {
         let old_Box = null;
-        Object.defineProperty(unsafeWindow, "Box", {
+        UnSafeWindowObjectDefineProperty(unsafeWindow, "Box", {
           get() {
             if (old_Box == null) {
               return;
@@ -6875,7 +6978,7 @@
       }
       if (PopsPanel.getValue("baidu_mbd_camouflage_lite_baiduboxapp")) {
         let oldNavigatorUserAgent = unsafeWindow.navigator.userAgent;
-        Object.defineProperty(unsafeWindow.navigator, "userAgent", {
+        UnSafeWindowObjectDefineProperty(unsafeWindow.navigator, "userAgent", {
           get() {
             return oldNavigatorUserAgent + " lite baiduboxapp";
           },
@@ -8569,6 +8672,27 @@
               type: "forms",
               forms: [
                 PopsPanel.getSwtichDetail(
+                  "处理搜索结果",
+                  "baidu_search_handle_search_result",
+                  true,
+                  void 0,
+                  "将百度重定向链接替换为真实地址(存在就替换，不存在的话保持原样)"
+                ),
+                PopsPanel.getSwtichDetail(
+                  "重定向顶部的链接",
+                  "baidu_search_redirect_top_link",
+                  true,
+                  void 0,
+                  "如全部、视频、图片、贴吧、咨询..."
+                ),
+                PopsPanel.getSwtichDetail(
+                  "重构百度搜索",
+                  "baidu_search_refactoring_input_boxes",
+                  true,
+                  void 0,
+                  "重构顶部的输入框、百度一下按钮、搜索建议框，可不出现百度App提示"
+                ),
+                PopsPanel.getSwtichDetail(
                   "自动翻页",
                   "baidu_search_automatically_expand_next_page",
                   false,
@@ -8606,6 +8730,13 @@
                   true,
                   void 0,
                   "正确新标签页打开"
+                ),
+                PopsPanel.getSwtichDetail(
+                  "【beta】新标签页打开",
+                  "baidu_search_hijack__onClick_to_blank",
+                  false,
+                  void 0,
+                  "实验性功能，需开启【劫持-_onClick函数】且能成功劫持到该函数才会生效，否则是粗糙的提取article的链接跳转"
                 ),
               ],
             },
@@ -9650,10 +9781,10 @@
       let oldData = GM_getValue("GM_Menu_Local_Map");
       let currentData = GM_getValue(this.key, {});
       if (oldData) {
-        Object.assign(currentData, oldData);
+        ObjectAssign(currentData, oldData);
         GM_setValue(this.key, currentData);
         GM_deleteValue("GM_Menu_Local_Map");
-        alert("共迁移数据量：" + Object.keys(oldData).length);
+        alert("共迁移数据量：" + ObjectKeys(oldData).length);
       } else {
         alert("不存在旧数据");
       }
@@ -9891,22 +10022,32 @@ remove-child##[class*='-video-player']`,
      * @param {string} menuKeyName
      */
     hijack_onClick(menuKeyName) {
-      let windowDefineProperty = unsafeWindow.Object.defineProperty;
       unsafeWindow.Object.defineProperty = function (
         target,
         propertyKey,
         _attributes
       ) {
         if (propertyKey === "_onClick") {
+          Baidu.$data.search.isHijack_onClick = true;
           log.info(["成功劫持_onClick", arguments]);
           let oldFn = _attributes["value"];
           _attributes["value"] = function (event) {
             let eventNode = this._getNode(event.target);
             let eventNodeName = this._getType(eventNode);
             if (eventNodeName === "link") {
+              utils.preventEvent(event);
               let linkProps = this._getLinkProps(eventNode);
               log.success(["点击事件-linkProps信息", linkProps]);
-              window.location.href = linkProps.href;
+              if (!linkProps.href) {
+                DOMUtils.trigger(document, "click", event, false);
+                return;
+              }
+              if (PopsPanel.getValue("baidu_search_hijack__onClick_to_blank")) {
+                log.success("新标签页打开: " + linkProps.href);
+                window.open(linkProps.href, "_blank");
+              } else {
+                window.location.href = linkProps.href;
+              }
             } else {
               log.success([
                 "点击事件-this._getType(eventNode)不为link",
@@ -9917,7 +10058,7 @@ remove-child##[class*='-video-player']`,
             }
           };
         }
-        windowDefineProperty.call(this, ...arguments);
+        UnSafeWindowObjectDefineProperty.call(this, ...arguments);
       };
     },
     /**
@@ -10027,7 +10168,7 @@ remove-child##[class*='-video-player']`,
       OpenBox.getIdmData = function () {
         return {};
       };
-      Object.defineProperty(unsafeWindow, "OpenBox", {
+      UnSafeWindowObjectDefineProperty(unsafeWindow, "OpenBox", {
         get: function () {
           return OpenBox;
         },
@@ -10107,7 +10248,7 @@ remove-child##[class*='-video-player']`,
      */
     hijackWebpack(webpackName = "webpackJsonp", mainCoreData, checkCallBack) {
       let originObject = void 0;
-      Object.defineProperty(unsafeWindow, webpackName, {
+      UnSafeWindowObjectDefineProperty(unsafeWindow, webpackName, {
         get() {
           return originObject;
         },
@@ -10123,7 +10264,7 @@ remove-child##[class*='-video-player']`,
                 Array.isArray(_mainCoreData) &&
                 JSON.stringify(mainCoreData) === JSON.stringify(_mainCoreData))
             ) {
-              Object.keys(args[0][1]).forEach((keyName) => {
+              ObjectKeys(args[0][1]).forEach((keyName) => {
                 let originSwitchFunc = args[0][1][keyName];
                 args[0][1][keyName] = function (..._args) {
                   let result = originSwitchFunc.call(this, ..._args);
@@ -10202,7 +10343,7 @@ remove-child##[class*='-video-player']`,
      * window.BoxJSBefore
      */
     hijackBoxJSBefore() {
-      Object.defineProperty(unsafeWindow, "BoxJSBefore", {
+      UnSafeWindowObjectDefineProperty(unsafeWindow, "BoxJSBefore", {
         get() {
           return new Proxy(
             {},
