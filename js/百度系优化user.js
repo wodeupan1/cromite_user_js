@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.3.17
+// @version      2024.3.17.16
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -29,7 +29,7 @@
 // @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1322684/Message.js
 // @require      https://update.greasyfork.org/scripts/456485/1343930/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1343928/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/455186/1344414/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1343306/DOMUtils.js
 // @require      https://update.greasyfork.org/scripts/488179/1332779/showdown.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
@@ -10162,7 +10162,9 @@ match-attr##srcid##(sigma|vid_fourfold)
 // 问一问
 match-attr##data-log##wenda_inquiry
 // 自动播放视频
-remove-child##[class*='-video-player']`,
+remove-child##[class*='-video-player']
+// 百度游戏
+match-attr##srcid##yx_entity_san`,
     /**
      * @type { {
      * mode: "match-href"|"match-attr"|"contains-child"|"remove-child",
