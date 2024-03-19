@@ -249,7 +249,6 @@ $('body').on('click','.layui-btn.whiteurl',function(){
 $(this).siblings('input').attr("data_zt","1");
 $(this).text("准备删除中，手动点击保存后方可生效");
 // 手动点击保存后方可生效，不点击保存按钮不会生效
- //普通的自带广告会自动过滤
 
 //若需按网址和关键词屏蔽过滤。请在控制面板中添加，并且手动点击保存后方可生效，不点击保存按钮不会生效
 $(this).css("background-color","#908d8d");
