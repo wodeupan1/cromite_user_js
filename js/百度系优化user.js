@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.4.6.15
+// @version      2024.4.7
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -446,6 +446,11 @@
       return (
         this.isTieBa() &&
         window.location.pathname.startsWith("/mo/q/newtopic/topicTemplate")
+      );
+    },
+    isTieBaHybrid() {
+      return (
+        this.isTieBa() && window.location.pathname.startsWith("/mo/q/hybrid")
       );
     },
     isTieBaNei() {
@@ -3276,8 +3281,12 @@
           loadingView.setText("Loading...", true);
           loadingView.show();
           let timeStamp = Date.now();
-          let nextPageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
-          let nextPageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
+          let nextPageUrl = tiebaApi.getPost(
+            `${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`
+          );
+          let nextPageAllCommentUrl = tiebaApi.getPost(
+            `totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`
+          );
           let pageDOM = await tiebaCommentConfig.getPageComment(nextPageUrl);
           let pageCommentList = await tiebaCommentConfig.getPageCommentList(
             nextPageAllCommentUrl
@@ -3345,8 +3354,12 @@
           loadingView.setText("Loading...", true);
           loadingView.show();
           let timeStamp = Date.now();
-          let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
-          let pageAllCommentUrl = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
+          let pageUrl = tiebaApi.getPost(
+            `${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`
+          );
+          let pageAllCommentUrl = tiebaApi.getPost(
+            `totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`
+          );
           let pageDOM = await tiebaCommentConfig.getPageComment(pageUrl);
           let pageCommentList = await tiebaCommentConfig.getPageCommentList(
             pageAllCommentUrl
@@ -4441,9 +4454,11 @@
          */
         async getLzlCommentReply(tid = "", pid = "", pn = 1) {
           let getResp = await httpx.get({
-            url: `https://tieba.baidu.com/p/comment?tid=${tid}&pid=${pid}&pn=${pn}&t=${new Date().getTime()}${
-              tiebaCommentConfig.extraSearchSignParams
-            }`,
+            url: tiebaApi.getPost(
+              `comment?tid=${tid}&pid=${pid}&pn=${pn}&t=${new Date().getTime()}${
+                tiebaCommentConfig.extraSearchSignParams
+              }`
+            ),
             headers: {
               "User-Agent": utils.getRandomPCUA(),
               Host: "tieba.baidu.com",
@@ -4816,8 +4831,12 @@
           tiebaCommentConfig.page = 1;
           loadingView.setText("Loading...", true);
           loadingView.show();
-          let url = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
-          let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
+          let url = tiebaApi.getPost(
+            `totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`
+          );
+          let pageUrl = tiebaApi.getPost(
+            `${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`
+          );
           let pageDOM = await tiebaCommentConfig.getPageComment(pageUrl);
           let pageCommentList = await tiebaCommentConfig.getPageCommentList(
             url
@@ -4895,8 +4914,12 @@
           tiebaCommentConfig.page = 1;
           loadingView.setText("Loading...", true);
           loadingView.show();
-          let url = `https://tieba.baidu.com/p/totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`;
-          let pageUrl = `https://tieba.baidu.com/p/${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`;
+          let url = tiebaApi.getPost(
+            `totalComment?t=${timeStamp}&tid=${tiebaCommentConfig.param_tid}&fid=${tiebaCommentConfig.param_forum_id}&pn=${tiebaCommentConfig.page}&see_lz=0${tiebaCommentConfig.extraSearchSignParams}`
+          );
+          let pageUrl = tiebaApi.getPost(
+            `${tiebaCommentConfig.param_tid}?pn=${tiebaCommentConfig.page}${tiebaCommentConfig.extraSearchSignParams}`
+          );
           let pageDOM = await tiebaCommentConfig.getPageComment(pageUrl);
           let pageCommentList = await tiebaCommentConfig.getPageCommentList(
             url
@@ -5419,25 +5442,43 @@
             );
             let repetitiveImageList = [];
             content_BDE_Image.forEach((BDE_Image) => {
+              /* 高清图片下标 */
               let originalImageIndex = item["media"].findIndex((src) => {
                 return src.includes(BDE_Image.src);
               });
               if (originalImageIndex !== -1) {
+                /* 存在对应的高清图片链接 */
                 let originalImage = item["media"][originalImageIndex];
                 BDE_Image.src = originalImage;
                 repetitiveImageList.push(originalImage);
                 item["media"].splice(originalImageIndex, 1);
               }
             });
+            let imageContainerElement = DOMUtils.createElement("div", {
+              className: "BDE_Image_container",
+            });
             item["media"].forEach((mediaSrc) => {
               DOMUtils.append(
-                contentSpanElement,
+                imageContainerElement,
                 DOMUtils.createElement("img", {
                   className: "BDE_Image",
                   src: mediaSrc,
                 })
               );
             });
+            contentSpanElement.appendChild(imageContainerElement);
+            /* 对贴吧表情进行处理，搜索到的表情是http的，换成https */
+            resultElement
+              .querySelectorAll(".search-result-content img.BDE_Smiley")
+              .forEach((BDE_Smiley) => {
+                if (
+                  !BDE_Smiley?.src?.startsWith("http://static.tieba.baidu.com")
+                ) {
+                  return;
+                }
+                let imagePathName = new URL(BDE_Smiley.src).pathname;
+                BDE_Smiley.src = tiebaApi.getImageSmiley(imagePathName);
+              });
             return resultElement;
           }
           function setCSS() {
@@ -5460,6 +5501,15 @@
               margin: 0.08rem .08rem;
               border-radius: .12rem;
               padding: .11rem .11rem;
+            }
+
+            .BDE_Image_container {
+              display: flex;
+              overflow: auto;
+            }
+            .BDE_Image_container img.BDE_Image {
+              max-width: 100px;
+              max-height: 150px;
             }
             `);
             if (
@@ -5630,6 +5680,17 @@
           }
           async function _click_event_() {
             tiebaCommentConfig.removeScrollListener();
+            searchInputElement.focus();
+            let searchText = searchInputElement.value.trim();
+            if (utils.isNull(searchText)) {
+              alert("请勿输入纯空格或空内容");
+              return;
+            }
+            if (PopsPanel.getValue("baidu_tieba_use_hybrid_search")) {
+              /* 直接跳转到搜索综合 */
+              window.open(tiebaApi.getHybridSearch(searchText), "_blank");
+              return;
+            }
             let contentElement =
               document.querySelector(".main-thread-content-margin") ||
               document.querySelector(".main-thread-content") ||
@@ -5637,12 +5698,6 @@
             DOMUtils.remove("#replySwitch");
             DOMUtils.remove(".post-item");
             DOMUtils.html(contentElement, "");
-            searchInputElement.focus();
-            let searchText = searchInputElement.value.trim();
-            if (utils.isNull(searchText)) {
-              alert("请勿输入纯空格或空内容");
-              return;
-            }
             loadingView.setText("Loading...", true);
             loadingView.show();
             if (searchType === 0) {
@@ -5824,7 +5879,9 @@
               key.startsWith("f_w_floor") ||
               key.startsWith("t_w_slient") ||
               key.startsWith("t_w_pop_slient") ||
-              key.startsWith("auto_slient_wakeup")
+              key.startsWith("auto_slient_wakeup") ||
+              key.startsWith("index_home_thread_guide-") ||
+              key.startsWith("search_w_pop_slient-")
             ) {
               log.info("伪装客户端已调用 " + key);
               return "1";
@@ -5841,6 +5898,8 @@
             "t_w_slient_",
             "t_w_pop_slient_",
             "auto_slient_wakeup_",
+            "index_home_thread_guide-",
+            "search_w_pop_slient-",
           ];
           masqueradeParamsList.forEach((masqueradeParam) => {
             window.localStorage.setItem(
@@ -6025,6 +6084,11 @@
        * 贴吧热议
        */
       const tiebaTopic = {
+        init() {
+          PopsPanel.execMenu("baidu_tieba_topic_redirect_jump", () => {
+            tiebaTopic.redirectJump();
+          });
+        },
         /**
          * 重定向跳转
          */
@@ -6040,7 +6104,7 @@
               window?.stop();
               let clickNode = event.target;
               let pid = clickNode.__vue__.item.tid;
-              let url = `https://tieba.baidu.com/p/${pid}`;
+              let url = tiebaApi.getPost(pid);
               log.success(`跳转至: ${url}`);
               if (PopsPanel.getValue("baidu_tieba_topic_openANewTab")) {
                 window.open(url, "_blank");
@@ -6048,6 +6112,59 @@
                 window.open(url);
               }
               return false;
+            },
+            {
+              capture: true,
+            }
+          );
+        },
+      };
+
+      const tieBaHybrid = {
+        init() {
+          this.blockAds();
+          PopsPanel.execMenu("baidu_tieba_hybrid_search_openANewTab", () => {
+            this.openANewTab();
+          });
+        },
+        /**
+         * 屏蔽广告
+         */
+        blockAds() {
+          GM_addStyle(`
+          /* 顶部横幅 */
+          .tb-index-navbar .fix-nav-guide-bar,
+          /* 底部的百度贴吧app内打开 */
+          .tb-index-navbar div:has(.fix-nav-bar-bottom){
+            display: none !important;
+          }
+          /* 把下面的内容往上移 */
+          #app_container ul.navbar-box{
+            top: 0px !important;
+          }
+          /* 把下面的内容往上移 */
+          #app_container .navbar-view{
+            padding-top: 0px !important;
+          }
+          `);
+        },
+        /**
+         * 新标签页打开
+         */
+        openANewTab() {
+          DOMUtils.on(
+            document,
+            "click",
+            ".scroll-list-wrapper .threadcardclass",
+            function (event) {
+              utils.preventEvent(event);
+              let clickNode = event.target;
+              let tid = clickNode.__vue__.tid;
+              if (utils.isNull(tid)) {
+                Qmsg.error("获取帖子的tid失败");
+                return;
+              }
+              window.open(tiebaApi.getPost(tid), "_blank");
             },
             {
               capture: true,
@@ -6065,6 +6182,20 @@
          * @type {object}
          */
         vueRootView: null,
+        init() {
+          if (PopsPanel.getValue("baidu_tieba_openANewTab")) {
+            tiebaBaNei.openANewTab();
+          }
+          if (PopsPanel.getValue("baidu_tieba_remember_user_post_sort")) {
+            tiebaBaNei.rememberPostSort();
+          }
+          if (PopsPanel.getValue("baidu_tieba_filterDuplicatePosts")) {
+            tiebaBaNei.filterDuplicatePosts();
+          }
+          if (PopsPanel.getValue("baidu_tieba_removeForumSignInLimit")) {
+            tiebaBaNei.removeForumSignInLimit();
+          }
+        },
         /**
          * 解除签到限制
          */
@@ -6229,6 +6360,20 @@
          * }[]}
          */
         mainPostImgList: [],
+        init() {
+          PopsPanel.execMenu("baidu_tieba_optimize_see_comments", () => {
+            log.success("优化查看评论");
+            tiebaCommentConfig.init();
+          });
+          PopsPanel.execMenu("baidu_tieba_optimize_image_preview", () => {
+            log.success("优化图片预览");
+            tiebaPost.optimizeImagePreview();
+          });
+          PopsPanel.execMenu("baidu_tieba_repairErrorThread", () => {
+            log.success("强制查看-贴子不存在或者已被删除");
+            tiebaPost.repairErrorThread();
+          });
+        },
         /**
          * 注册全局贴吧图片点击预览(只预览通过贴吧上传的图片，非其它图床图片)
          */
@@ -6706,6 +6851,31 @@
             return document.querySelector(".app-view")?.__vue__?.forum?.id;
           }
         },
+        /**
+         * 根据tid/pid获取帖子链接
+         * @param {string} id
+         */
+        getPost(id) {
+          return `https://tieba.baidu.com/p/${id}`;
+        },
+        /**
+         * 获取搜索综合的地址
+         * @param {string} searchText
+         */
+        getHybridSearch(searchText) {
+          return `https://tieba.baidu.com/mo/q/hybrid/search?keyword=${searchText}`;
+        },
+        /**
+         * 获取贴吧表情图片
+         * @param {string} pathName 原static.baidu.com的pathname
+         * @returns
+         */
+        getImageSmiley(pathName) {
+          if (pathName.startsWith("/")) {
+            pathName = pathName.replace(/^\//, "");
+          }
+          return `https://gsp0.baidu.com/5aAHeD3nKhI2p27j8IqW0jdnxx1xbK/${pathName}`;
+        },
       };
       if (PopsPanel.getValue("baidu_tieba_clientCallMasquerade")) {
         tiebaBusiness.clientCallMasquerade();
@@ -6716,66 +6886,49 @@
       }
       GM_addStyle(this.css.tieba);
       log.info("插入CSS规则");
-      if (Router.isTieBaPost()) {
-        if (PopsPanel.getValue("baidu_tieba_optimize_see_comments")) {
-          log.success("优化查看评论");
-          tiebaCommentConfig.init();
-        }
-        if (PopsPanel.getValue("baidu_tieba_optimize_image_preview")) {
-          log.success("优化图片预览");
-          tiebaPost.optimizeImagePreview();
-        }
-        if (PopsPanel.getValue("baidu_tieba_repairErrorThread")) {
-          log.success("强制查看-贴子不存在或者已被删除");
-          tiebaPost.repairErrorThread();
-        }
-      }
       if (Router.isTieBaIndex()) {
         /* 首页 */
-        if (PopsPanel.getValue("baidu_tieba_index_openANewTab")) {
+        log.success("Router: 首页");
+        PopsPanel.execMenu("baidu_tieba_index_openANewTab", () => {
           tiebaBaNei.openANewTab();
-        }
-      }
-      if (Router.isTieBaNewTopic()) {
+        });
+      } else if (Router.isTieBaPost()) {
+        /* 帖子 */
+        log.success("Router: 帖子");
+        tiebaPost.init();
+      } else if (Router.isTieBaNewTopic()) {
         /* 话题热议 */
-        if (PopsPanel.getValue("baidu_tieba_topic_redirect_jump")) {
-          tiebaTopic.redirectJump();
-        }
-      }
-      if (Router.isTieBaNei()) {
+        log.success("Router: 话题热议");
+        tiebaTopic.init();
+      } else if (Router.isTieBaHybrid()) {
+        /* 搜索综合 */
+        log.success("Router: 搜索综合");
+        tieBaHybrid.init();
+      } else if (Router.isTieBaNei()) {
         /* 吧内 */
-        if (PopsPanel.getValue("baidu_tieba_openANewTab")) {
-          tiebaBaNei.openANewTab();
-        }
-        if (PopsPanel.getValue("baidu_tieba_remember_user_post_sort")) {
-          tiebaBaNei.rememberPostSort();
-        }
-        if (PopsPanel.getValue("baidu_tieba_filterDuplicatePosts")) {
-          tiebaBaNei.filterDuplicatePosts();
-        }
-        if (PopsPanel.getValue("baidu_tieba_removeForumSignInLimit")) {
-          tiebaBaNei.removeForumSignInLimit();
-        }
+        log.success("Router: 吧内");
+        tiebaBaNei.init();
       } else {
-        /* 贴内 */
-        if (PopsPanel.getValue("baidu_tieba_add_scroll_top_button_in_forum")) {
-          tiebaBusiness.addScrollTopButton();
-        }
-        if (
-          PopsPanel.getValue(
-            "baidu_tieba_clickOnTheOwnerSAvatarToCorrectlyRedirectToTheHomepage"
-          )
-        ) {
+        log.error("Router: 未知");
+      }
+      PopsPanel.execMenu("baidu_tieba_add_scroll_top_button_in_forum", () => {
+        tiebaBusiness.addScrollTopButton();
+      });
+      PopsPanel.execMenu(
+        "baidu_tieba_clickOnTheOwnerSAvatarToCorrectlyRedirectToTheHomepage",
+        () => {
           tiebaBusiness.addAuthorClickEvent();
         }
-      }
-      if (PopsPanel.getValue("baidu_tieba_add_search")) {
+      );
+      PopsPanel.execMenu("baidu_tieba_add_search", () => {
         tiebaSearchConfig.init();
-      }
+      });
       DOMUtils.ready(function () {
-        if (PopsPanel.getValue("baidu_tieba_checkSkeleton")) {
+        PopsPanel.execMenu("baidu_tieba_checkSkeleton", () => {
           tiebaBusiness.checkSkeleton();
-        }
+        });
+        /* 初始化贴吧数据 */
+        /* 例如：吧名，高清图片 */
         utils
           .waitAnyNode(".tb-mobile-viewport", ".main-page-wrap")
           .then(async () => {
@@ -9587,39 +9740,6 @@
           scrollToDefaultView: true,
           forms: [
             {
-              text: "通用",
-              type: "forms",
-              forms: [
-                PopsPanel.getSwtichDetail(
-                  "检测骨架屏",
-                  "baidu_tieba_checkSkeleton",
-                  true,
-                  void 0,
-                  "当页面加载完毕后检测到还是骨架屏，将会自动刷新页面"
-                ),
-              ],
-            },
-            {
-              text: "搜索功能",
-              type: "forms",
-              forms: [
-                PopsPanel.getSwtichDetail(
-                  "启用",
-                  "baidu_tieba_add_search",
-                  true,
-                  void 0,
-                  "在贴内和吧内右上角添加搜索按钮"
-                ),
-                PopsPanel.getSwtichDetail(
-                  "获取详细信息",
-                  "baidu_tieba_search_opt_user_info",
-                  true,
-                  void 0,
-                  "将搜索结果的【用户名/头像】替换成请求获取的【用户名/头像】"
-                ),
-              ],
-            },
-            {
               text: "账号功能",
               type: "forms",
               forms: [
@@ -9740,6 +9860,46 @@
               ],
             },
             {
+              text: "通用",
+              type: "forms",
+              forms: [
+                PopsPanel.getSwtichDetail(
+                  "检测骨架屏",
+                  "baidu_tieba_checkSkeleton",
+                  true,
+                  void 0,
+                  "当页面加载完毕后检测到还是骨架屏，将会自动刷新页面"
+                ),
+              ],
+            },
+            {
+              text: "搜索功能",
+              type: "forms",
+              forms: [
+                PopsPanel.getSwtichDetail(
+                  "启用",
+                  "baidu_tieba_add_search",
+                  true,
+                  void 0,
+                  "在贴内和吧内右上角添加搜索按钮"
+                ),
+                PopsPanel.getSwtichDetail(
+                  "获取详细信息",
+                  "baidu_tieba_search_opt_user_info",
+                  true,
+                  void 0,
+                  "将搜索结果的【用户名/头像】替换成请求获取的【用户名/头像】"
+                ),
+                PopsPanel.getSwtichDetail(
+                  "使用【搜索综合】",
+                  "baidu_tieba_use_hybrid_search",
+                  false,
+                  void 0,
+                  "使用贴吧移动端的搜索功能"
+                ),
+              ],
+            },
+            {
               text: "首页",
               type: "forms",
               forms: [
@@ -9766,6 +9926,19 @@
                 PopsPanel.getSwtichDetail(
                   "新标签页打开",
                   "baidu_tieba_topic_openANewTab",
+                  false,
+                  void 0,
+                  "新标签页打开帖子"
+                ),
+              ],
+            },
+            {
+              text: "搜索综合",
+              type: "forms",
+              forms: [
+                PopsPanel.getSwtichDetail(
+                  "新标签页打开",
+                  "baidu_tieba_hybrid_search_openANewTab",
                   false,
                   void 0,
                   "新标签页打开帖子"
