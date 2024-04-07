@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.4.7
+// @version      2024.4.7.16
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -833,6 +833,10 @@
 			}
 		`,
       wenku: `
+      /* 首页顶部的开通VIP横幅 */
+      .new-home-wrap .van-swipe.swipe-home,
+      /* 优质文档VIP随便下 */
+      .vip-card-wrap,
 			.reader-pop-manager-view-containter,
 			.core-download,
 			.card-wrap.card-vip,
@@ -2959,7 +2963,6 @@
          * @type
          */
         isNearBottomValue: 250,
-
         init() {
           let urlSignParams = new URLSearchParams(window.location.search);
           if (
@@ -6956,31 +6959,39 @@
       log.info("插入CSS规则");
       const WenKu = {
         init() {
-          if (PopsPanel.getValue("baidu_wenku_block_member_picks")) {
+          GM_addStyle(`
+          /* 上面的工具栏会挡住标题栏 */
+          #app-pre .top-card.top-card-top{
+            margin-top: 56px !important;
+          }
+          `);
+          PopsPanel.execMenu("baidu_wenku_block_member_picks", () => {
             this.shieldVipPicks();
-          }
-
-          if (PopsPanel.getValue("baidu_wenku_blocking_app_featured")) {
+          });
+          PopsPanel.execMenu("baidu_wenku_blocking_app_featured", () => {
             this.shieldAppPicks();
-          }
-          if (PopsPanel.getValue("baidu_wenku_blocking_related_documents")) {
+          });
+          PopsPanel.execMenu("baidu_wenku_blocking_related_documents", () => {
             this.shieldRelatedDocuments();
-          }
-          if (PopsPanel.getValue("baidu_wenku_blocking_bottom_toolbar")) {
+          });
+          PopsPanel.execMenu("baidu_wenku_blocking_bottom_toolbar", () => {
             this.shieldBottomToolBar();
-          }
-          if (PopsPanel.getValue("baidu_wenku_shield_next_btn")) {
+          });
+          PopsPanel.execMenu("baidu_wenku_shield_next_btn", () => {
             this.shieldNextArticleButton();
-          }
+          });
+          PopsPanel.execMenu("baidu_wenku_blockDocumentAssistant", () => {
+            this.blockDocumentAssistant();
+          });
         },
-        /* 屏蔽会员精选 */
+        /** 屏蔽会员精选 */
         shieldVipPicks() {
           GM_addStyle(`
           div[class*="vip-choice_"][data-ait-action="vipChoiceShow"]{
             display: none !important;
           }`);
         },
-        /* 屏蔽APP精选 */
+        /** 屏蔽APP精选 */
         shieldAppPicks() {
           GM_addStyle(`
           div[class*="app-choice_"][data-ait-action="appChoiceNewShow"],
@@ -6988,7 +6999,7 @@
             display: none !important;
           }`);
         },
-        /* 屏蔽相关文档 */
+        /** 屏蔽相关文档 */
         shieldRelatedDocuments() {
           GM_addStyle(`
           div.fold-page-conversion,
@@ -6996,19 +7007,27 @@
             display: none !important;
           }`);
         },
-        /* 屏蔽底部工具栏 */
+        /** 屏蔽底部工具栏 */
         shieldBottomToolBar() {
           GM_addStyle(`
           div.barbottom{
             display: none !important;
           }`);
         },
-        /* 屏蔽下一篇按钮 */
+        /** 屏蔽下一篇按钮 */
         shieldNextArticleButton() {
           GM_addStyle(`
           div.next-page-container{
             display: none !important;
           }`);
+        },
+        /** 【屏蔽】文档助手 */
+        blockDocumentAssistant() {
+          GM_addStyle(`
+          .ai-chat-wrap{
+            display: none !important;
+          }
+          `);
         },
       };
       WenKu.init();
@@ -9127,7 +9146,7 @@
               let containerItem = formChildConfigList[formChildConfigIndex];
               if (!containerItem["attributes"]) {
                 /* 必须配置attributes属性，用于存储菜单的键和默认值 */
-                return;
+                continue;
               }
               /* 获取键名 */
               let key =
@@ -10079,9 +10098,7 @@
           id: "baidu-panel-config-wenku",
           title: "文库",
           headerTitle: "百度文库<br />wk.baidu.com<br />tanbi.baidu.com",
-          isDefault() {
-            return Router.isWenKu();
-          },
+          isDefault: Router.isWenKu,
           scrollToDefaultView: true,
           forms: [
             {
@@ -10089,29 +10106,36 @@
               type: "forms",
               forms: [
                 PopsPanel.getSwtichDetail(
-                  "屏蔽会员精选",
+                  "【屏蔽】会员精选",
                   "baidu_wenku_block_member_picks",
                   true
                 ),
                 PopsPanel.getSwtichDetail(
-                  "屏蔽APP精选",
+                  "【屏蔽】APP精选",
                   "baidu_wenku_blocking_app_featured",
                   true
                 ),
                 PopsPanel.getSwtichDetail(
-                  "屏蔽相关文档",
+                  "【屏蔽】相关文档",
                   "baidu_wenku_blocking_related_documents",
                   false
                 ),
                 PopsPanel.getSwtichDetail(
-                  "屏蔽底部工具栏",
+                  "【屏蔽】底部工具栏",
                   "baidu_wenku_blocking_bottom_toolbar",
                   false
                 ),
                 PopsPanel.getSwtichDetail(
-                  "屏蔽下一篇按钮",
+                  "【屏蔽】下一篇按钮",
                   "baidu_wenku_shield_next_btn",
                   false
+                ),
+                PopsPanel.getSwtichDetail(
+                  "【屏蔽】文档助手",
+                  "baidu_wenku_blockDocumentAssistant",
+                  false,
+                  void 0,
+                  "右下角的悬浮按钮"
                 ),
               ],
             },
