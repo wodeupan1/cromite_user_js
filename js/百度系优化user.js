@@ -3,7 +3,7 @@
 // @icon         https://www.baidu.com/favicon.ico
 // @namespace    https://greasyfork.org/zh-CN/scripts/418349
 // @supportURL   https://github.com/WhiteSevs/TamperMonkeyScript/issues
-// @version      2024.4.12.23
+// @version      2024.4.15
 // @author       WhiteSevs
 // @run-at       document-start
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
@@ -26,12 +26,12 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        unsafeWindow
-// @require      https://update.greasyfork.org/scripts/449471/1305484/Viewer.js
+// @require      https://update.greasyfork.org/scripts/449471/1360565/Viewer.js
 // @require      https://update.greasyfork.org/scripts/462234/1322684/Message.js
-// @require      https://update.greasyfork.org/scripts/456485/1357649/pops.js
-// @require      https://update.greasyfork.org/scripts/455186/1355010/WhiteSevsUtils.js
-// @require      https://update.greasyfork.org/scripts/465772/1344519/DOMUtils.js
-// @require      https://update.greasyfork.org/scripts/488179/1332779/showdown.js
+// @require      https://update.greasyfork.org/scripts/456485/1360571/pops.js
+// @require      https://update.greasyfork.org/scripts/455186/1360586/WhiteSevsUtils.js
+// @require      https://update.greasyfork.org/scripts/465772/1360574/DOMUtils.js
+// @require      https://update.greasyfork.org/scripts/488179/1360581/showdown.js
 // @downloadURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.user.js
 // @updateURL https://update.greasyfork.org/scripts/418349/%E3%80%90%E7%A7%BB%E5%8A%A8%E7%AB%AF%E3%80%91%E7%99%BE%E5%BA%A6%E7%B3%BB%E4%BC%98%E5%8C%96.meta.js
 // ==/UserScript==
@@ -61,27 +61,27 @@
    */
   const DEBUG = false;
   /**
-   * @type {import("../库/pops")}
+   * @type {import("../库/pops/index")}
    */
   const pops = window.pops;
   /**
-   * @type {import("../库/Viewer")}
+   * @type {import("../库/Viewer/index")}
    */
   const Viewer = window.Viewer;
   /**
-   * @type {import("../库/Qmsg")}
+   * @type {import("../库/Qmsg/index.js")}
    */
   const Qmsg = window.Qmsg;
   /**
-   * @type {import("../库/Utils")}
+   * @type {import("../库/Utils/index.js")}
    */
   const utils = window.Utils.noConflict();
   /**
-   * @type {import("../库/DOMUtils")}
+   * @type {import("../库/DOMUtils/index.js")}
    */
   const DOMUtils = window.DOMUtils.noConflict();
   /**
-   * @type {import("../库/showdown")}
+   * @type {import("../库/showdown/index")}
    */
   const showdown = window.showdown;
   const log = new utils.Log(GM_info, unsafeWindow.console || console);
@@ -436,7 +436,7 @@
     },
     isTieBa() {
       return window.location.href.match(
-        /^http(s|):\/\/(tieba.baidu|www.tieba|ala.baidu|static.tieba.baidu).com/g
+        /^http(s|):\/\/(tieba.baidu|www.tieba|ala.baidu|static.tieba.baidu|nba.baidu).com/g
       );
     },
     isTieBaPost() {
@@ -9764,7 +9764,8 @@
         {
           id: "baidu-panel-config-tieba",
           title: "贴吧",
-          headerTitle: "百度贴吧<br />tieba.baidu.com<br />www.tieba.com",
+          headerTitle:
+            "百度贴吧<br />tieba.baidu.com<br />www.tieba.com<br />...等",
           isDefault() {
             return Router.isTieBa();
           },
