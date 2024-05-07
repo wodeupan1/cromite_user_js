@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【移动端】百度系优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2024.5.6.14
+// @version      2024.5.7
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @icon         https://www.baidu.com/favicon.ico
@@ -16,7 +16,7 @@
 // @require      https://update.greasyfork.org/scripts/455186/1371570/WhiteSevsUtils.js
 // @require      https://update.greasyfork.org/scripts/465772/1360574/DOMUtils.js
 // @require      https://update.greasyfork.org/scripts/488179/1360581/showdown.js
-// @require      https://cdn.jsdelivr.net/npm/vue@3.4.26/dist/vue.global.prod.js
+// @require      https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.prod.js
 // @require      data:application/javascript,window.Vue%3DVue%3B
 // @require      https://cdn.jsdelivr.net/npm/element-plus@2.7.2/dist/index.full.min.js
 // @require      data:application/javascript,window.ElementPlus%3DElementPlus%3B
@@ -11325,7 +11325,7 @@ div[class^="new-summary-container_"] {\r
     return elRect.top < containerRect.bottom && elRect.bottom > containerRect.top && elRect.right > containerRect.left && elRect.left < containerRect.right;
   };
   /**
-  * @vue/shared v3.4.26
+  * @vue/shared v3.4.27
   * (c) 2018-present Yuxi (Evan) You and Vue contributors
   * @license MIT
   **/
