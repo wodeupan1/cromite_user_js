@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         俺的手机视频脚本
 // @description  全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
-// @version      1.6.23
+// @version      1.6.24
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -9,6 +9,7 @@
 // @grant        GM_getValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_registerMenuCommand
+// @grant        window.onurlchange
 // @downloadURL https://update.greasyfork.org/scripts/456542/%E4%BF%BA%E7%9A%84%E6%89%8B%E6%9C%BA%E8%A7%86%E9%A2%91%E8%84%9A%E6%9C%AC.user.js
 // @updateURL https://update.greasyfork.org/scripts/456542/%E4%BF%BA%E7%9A%84%E6%89%8B%E6%9C%BA%E8%A7%86%E9%A2%91%E8%84%9A%E6%9C%AC.meta.js
 // ==/UserScript==
@@ -26,31 +27,18 @@
     //部分网站阻止视频操作层触摸事件传播，需要指定监听目标，默认是document
     //注意，对少数iframe内视频，广告插件或使此脚本不起作用
     let listenTarget = document;
+    //youtube使用无刷新网页，需要监听地址变化重新监听操控层
     if (window.location.host === "m.youtube.com") {
-        //整个网页就完全不刷新，内容却变来变去
         let timer;
-        let observer;
-        let lastLocation = "";
-        //内容变化事件处理器
         let refresh = function () {
-            let href = window.location.href;
-            //观察网页内容变化，每次切换页面会触发多次，所以每个新地址只能执行一次
-            if (!lastLocation) {
-                //初次加载
-                //通过元素页面【中断于->删除节点】发现#app是改变内容的父容器
-                let target = document.getElementById("app");
-                observer = new MutationObserver(refresh);
-                observer.observe(target, {subtree: true, childList: true});
-            } else if (href === lastLocation) {
-                return;
-            }
-            //记录本次地址
-            lastLocation = href;
+            console.log("俺的手机视频脚本：页面刷新...");
             //每到一个新页面应该清除定时器，以免上一个页面尚未清除又添加了新的
             if (timer) clearInterval(timer);
             //youtube视频在脚本执行时还没加载，需要个定时器循环获取状态
-            if (href.search("watch") >= 0) {
+            if (window.location.href.search("watch") >= 0) {
+                console.log("俺的手机视频脚本：已创建定时器。");
                 timer = setInterval(() => {
+                    console.log("俺的手机视频脚本：正在获取视频...");
                     //特定的视频操控层
                     let videos = document.getElementsByTagName("video");
                     let listenTargetArray = document.getElementsByClassName("player-controls-background");
@@ -60,14 +48,17 @@
                         if (video.readyState > 1 && !video.paused && !video.muted) {
                             //视频已加载
                             listenTarget = listenTargetArray[0];
+                            console.log("俺的手机视频脚本：开始监听手势。");
                             listen();
                             clearInterval(timer);
+                            console.log("俺的手机视频脚本：清除定时器。");
                         }
                     }
                 }, 500);
             }
         };
         refresh();
+        window.addEventListener("urlchange", refresh);
     }
     //通用
     listen();
