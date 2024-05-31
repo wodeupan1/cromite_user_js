@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【移动端】百度系优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2024.5.30
+// @version      2024.5.31.11
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @license      GPL-3.0-only
@@ -980,7 +980,7 @@ match-attr##srcid##sp_purc_atom
           UISwitch(
             "自动翻页",
             "baidu_search_automatically_expand_next_page",
-            false,
+            true,
             function(event, enable) {
               if (enable && PopsPanel.getValue(
                 "baidu_search_automatically_click_on_the_next_page_with_searchcraft_ua"
@@ -1039,35 +1039,35 @@ match-attr##srcid##sp_purc_atom
           UISwitch(
             "劫持-复制",
             "baidu_search_hijack_copy",
-            false,
+            true,
             void 0,
             "阻止百度复制xxx到剪贴板"
           ),
           UISwitch(
             "劫持-Scheme唤醒App",
             "baidu_search_hijack_scheme",
-            false,
+            true,
             void 0,
             "阻止唤醒调用App"
           ),
           UISwitch(
             "劫持-OpenBox函数",
             "baidu_search_hijack_openbox",
-            false,
+            true,
             void 0,
             "优化搜索结果跳转"
           ),
           UISwitch(
             "劫持-_onClick函数",
             "baidu_search_hijack__onClick",
-            false,
+            true,
             void 0,
             "优化搜索结果跳转"
           ),
           UISwitch(
             "劫持-setTimeout",
             "baidu_search_hijack_setTimeout",
-            false,
+            true,
             void 0,
             "可阻止获取定位、视频播放"
           )
@@ -1200,11 +1200,7 @@ match-attr##srcid##sp_purc_atom
             "baijiahao_shield_recommended_article",
             true
           ),
-          UISwitch(
-            "【屏蔽】用户评论",
-            "baijiahao_shield_user_comment",
-            false
-          ),
+          UISwitch("【屏蔽】用户评论", "baijiahao_shield_user_comment", false),
           UISwitch(
             "【屏蔽】底部悬浮工具栏",
             "baijiahao_shield_user_comment_input_box",
@@ -1219,7 +1215,7 @@ match-attr##srcid##sp_purc_atom
           UISwitch(
             "劫持-唤醒App",
             "baijiahao_hijack_wakeup",
-            false,
+            true,
             void 0,
             "阻止唤醒调用App"
           ),
@@ -1230,11 +1226,7 @@ match-attr##srcid##sp_purc_atom
             void 0,
             "阻止唤醒调用App"
           ),
-          UISwitch(
-            "劫持-OpenBox函数",
-            "baidu_baijiahao_hijack_openbox",
-            false
-          )
+          UISwitch("劫持-OpenBox函数", "baidu_baijiahao_hijack_openbox", true)
         ]
       },
       {
@@ -1283,7 +1275,7 @@ match-attr##srcid##sp_purc_atom
           UISwitch(
             "拦截-唤醒App",
             "baidu_mbd_hijack_wakeup",
-            false,
+            true,
             void 0,
             "阻止唤醒调用App"
           ),
@@ -1297,7 +1289,7 @@ match-attr##srcid##sp_purc_atom
           UISwitch(
             "劫持-BoxJSBefore函数",
             "baidu_mbd_hijack_BoxJSBefore",
-            false,
+            true,
             void 0,
             "阻止唤醒调用App"
           )
@@ -1926,7 +1918,7 @@ match-attr##srcid##sp_purc_atom
             function(event, enable) {
               if (enable) {
                 window.alert(
-                  "开启后，如果查看的帖子显示【贴子不存在或者已被删除】，且该帖子在PC端可以查看，那么该修复可以生效。"
+                  "开启后，如果查看的帖子显示【贴子不存在或者已被删除】或【该帖子需要去app内查看哦】，且该帖子在PC端可以查看，那么该修复可以生效。"
                 );
               }
             },
@@ -1995,16 +1987,8 @@ match-attr##srcid##sp_purc_atom
         text: "屏蔽",
         type: "forms",
         forms: [
-          UISwitch(
-            "【屏蔽】会员精选",
-            "baidu_wenku_block_member_picks",
-            true
-          ),
-          UISwitch(
-            "【屏蔽】APP精选",
-            "baidu_wenku_blocking_app_featured",
-            true
-          ),
+          UISwitch("【屏蔽】会员精选", "baidu_wenku_block_member_picks", true),
+          UISwitch("【屏蔽】APP精选", "baidu_wenku_blocking_app_featured", true),
           UISwitch(
             "【屏蔽】相关文档",
             "baidu_wenku_blocking_related_documents",
@@ -2015,11 +1999,7 @@ match-attr##srcid##sp_purc_atom
             "baidu_wenku_blocking_bottom_toolbar",
             false
           ),
-          UISwitch(
-            "【屏蔽】下一篇按钮",
-            "baidu_wenku_shield_next_btn",
-            false
-          ),
+          UISwitch("【屏蔽】下一篇按钮", "baidu_wenku_shield_next_btn", false),
           UISwitch(
             "【屏蔽】文档助手",
             "baidu_wenku_blockDocumentAssistant",
@@ -2143,16 +2123,8 @@ match-attr##srcid##sp_purc_atom
             "baidu_zhidao_block_recommend_more_exciting_content",
             true
           ),
-          UISwitch(
-            "【屏蔽】相关问题",
-            "baidu_zhidao_block_related_issues",
-            true
-          ),
-          UISwitch(
-            "【屏蔽】其他回答",
-            "baidu_zhidao_block_other_answers",
-            false
-          ),
+          UISwitch("【屏蔽】相关问题", "baidu_zhidao_block_related_issues", true),
+          UISwitch("【屏蔽】其他回答", "baidu_zhidao_block_other_answers", false),
           UISwitch(
             "【屏蔽】顶部浮动工具栏",
             "baidu_zhidao_shield_top_fixed_toolbar",
@@ -2190,13 +2162,7 @@ match-attr##srcid##sp_purc_atom
       {
         text: "功能",
         type: "forms",
-        forms: [
-          UISwitch(
-            "自动聚焦输入框",
-            "baidu_fanyi_auto_focus",
-            true
-          )
-        ]
+        forms: [UISwitch("自动聚焦输入框", "baidu_fanyi_auto_focus", true)]
       },
       {
         text: "App（fanyi-app）",
@@ -2247,7 +2213,7 @@ match-attr##srcid##sp_purc_atom
           UISwitch(
             "拦截-唤醒App",
             "baidu_map_hijack_wakeup",
-            false,
+            true,
             void 0,
             "阻止唤醒调用App"
           )
@@ -2278,11 +2244,7 @@ match-attr##srcid##sp_purc_atom
         text: "屏蔽",
         type: "forms",
         forms: [
-          UISwitch(
-            "【屏蔽】轮播图",
-            "baidu_aiqicha_shield_carousel",
-            true
-          ),
+          UISwitch("【屏蔽】轮播图", "baidu_aiqicha_shield_carousel", true),
           UISwitch(
             "【屏蔽】行业热点新闻",
             "baidu_aiqicha_shield_industry_host_news",
@@ -2315,11 +2277,7 @@ match-attr##srcid##sp_purc_atom
         text: "屏蔽",
         type: "forms",
         forms: [
-          UISwitch(
-            "【屏蔽】猜你喜欢",
-            "baidu_haokan_shield_may_also_like",
-            true
-          ),
+          UISwitch("【屏蔽】猜你喜欢", "baidu_haokan_shield_may_also_like", true),
           UISwitch(
             "【屏蔽】今日热播榜单",
             "baidu_haokan_shield_today_s_hot_list",
@@ -2350,7 +2308,7 @@ match-attr##srcid##sp_purc_atom
           UISwitch(
             "拦截-唤醒App",
             "baidu_haokan_hijack_wakeup",
-            false,
+            true,
             void 0,
             "阻止唤醒调用App"
           )
@@ -2426,11 +2384,7 @@ match-attr##srcid##sp_purc_atom
         text: "屏蔽",
         type: "forms",
         forms: [
-          UISwitch(
-            "【屏蔽】文字/图片水印",
-            "baidu_yiyan_remove_ai_mask",
-            true
-          )
+          UISwitch("【屏蔽】文字/图片水印", "baidu_yiyan_remove_ai_mask", true)
         ]
       }
     ]
@@ -2448,11 +2402,7 @@ match-attr##srcid##sp_purc_atom
         text: "屏蔽",
         type: "forms",
         forms: [
-          UISwitch(
-            "【屏蔽】文字/图片水印",
-            "baidu_chat_remove_ai_mask",
-            true
-          )
+          UISwitch("【屏蔽】文字/图片水印", "baidu_chat_remove_ai_mask", true)
         ]
       }
     ]
@@ -2527,11 +2477,7 @@ match-attr##srcid##sp_purc_atom
             "baidu_easylearn_unlocking_the_upper_limit_of_search_questions",
             true
           ),
-          UISwitch(
-            "自动显示答案",
-            "baidu_easylearn_auto_show_answer",
-            true
-          )
+          UISwitch("自动显示答案", "baidu_easylearn_auto_show_answer", true)
         ]
       }
     ]
@@ -3762,14 +3708,34 @@ div[class^="new-summary-container_"] {\r
     }
   };
   const BaiduHook = {
+    $isHook: {
+      hijackBoxJSBefore: false,
+      is_hijack_onClick: false,
+      hijackJQueryAppend: false,
+      hijackOpenBox: false,
+      hijackFunctionCall_WebPack_TieBa: false,
+      hijackFunctionCall_WebPack_HaoKan: false,
+      hijackFunctionCall_BaiJiaHao_Map: false
+    },
+    $data: {
+      hijackFunctionApply: [],
+      hijackElementAppendChild: [],
+      hijackSetTimeout: []
+    },
     /**
      * 统一管理apply的劫持，防止套娃
-     * @param mode copy scheme
+     * @param mode 劫持的类型
      */
     hijackFunctionApply(mode) {
-      mode = mode.toLowerCase();
+      this.$data.hijackFunctionApply.push(mode);
+      if (this.$data.hijackFunctionApply.length > 1) {
+        log.info("Function.apply hook新增劫持参数：" + mode);
+        return;
+      }
+      let that = this;
+      log.info("初始化Function.apply hook");
       _unsafeWindow.Function.prototype.apply = function(...args) {
-        if (mode.includes("copy")) {
+        if (that.$data.hijackFunctionApply.includes("copy")) {
           try {
             let firstParam = args[1];
             if (args.length === 2 && typeof firstParam === "object" && "" + firstParam === "[object Arguments]" && firstParam.length === 1 && typeof firstParam[0] === "object" && firstParam[0] != null && "appName" in firstParam[0] && "checkTokenCopied" in firstParam[0] && "deeplink" in firstParam[0] && "scheme" in firstParam[0] && "token" in firstParam[0] && "useDeeplink" in firstParam[0]) {
@@ -3783,7 +3749,8 @@ div[class^="new-summary-container_"] {\r
             }
           } catch (error) {
           }
-        } else if (mode.includes("scheme")) {
+        }
+        if (that.$data.hijackFunctionApply.includes("scheme")) {
           try {
             let firstParam = args[1];
             if (args.length === 2 && typeof firstParam === "object" && "" + firstParam === "[object Arguments]" && firstParam.length === 2 && firstParam[1] === "scheme") {
@@ -3804,6 +3771,10 @@ div[class^="new-summary-container_"] {\r
      * @param menuKeyName
      */
     hijack_onClick(menuKeyName) {
+      if (this.$isHook.is_hijack_onClick) {
+        return;
+      }
+      this.$isHook.is_hijack_onClick = true;
       _unsafeWindow.Object.defineProperty = function(target, propertyKey, _attributes) {
         if (propertyKey === "_onClick") {
           log.info(["成功劫持_onClick", arguments]);
@@ -3845,15 +3816,21 @@ div[class^="new-summary-container_"] {\r
      * Element.prototype.appendChild
      * @param handleCallBack 处理的回调函数，如果劫持请返回true
      */
-    hijackElementAppendChild(handleCallBack) {
-      _unsafeWindow.Element.prototype.appendChild = function(element) {
-        var _a3;
-        if (element instanceof HTMLIFrameElement) {
-          if (!((_a3 = element == null ? void 0 : element.src) == null ? void 0 : _a3.startsWith("http"))) {
-            log.success(["劫持iframe唤醒：" + element.src, element]);
-            return;
-          }
+    hijackElementAppendChild(handleCallBack = function(element) {
+      var _a3;
+      if (element instanceof HTMLIFrameElement) {
+        if (!((_a3 = element == null ? void 0 : element.src) == null ? void 0 : _a3.startsWith("http"))) {
+          log.success(["劫持iframe唤醒：" + element.src, element]);
+          return;
         }
+      }
+    }) {
+      this.$data.hijackElementAppendChild.push(handleCallBack);
+      if (this.$data.hijackElementAppendChild.length > 1) {
+        log.info("Element.prototype.appendChild hook新增劫持判断回调");
+        return;
+      }
+      _unsafeWindow.Element.prototype.appendChild = function(element) {
         if (typeof handleCallBack === "function") {
           let handleResult = handleCallBack(element);
           if (handleResult) {
@@ -3870,6 +3847,10 @@ div[class^="new-summary-container_"] {\r
      * $().append();
      */
     hijackJQueryAppend() {
+      if (this.$isHook.hijackJQueryAppend) {
+        return;
+      }
+      this.$isHook.hijackJQueryAppend = true;
       let originAppend = _unsafeWindow.$.fn.append;
       _unsafeWindow.$.fn.append = function(params) {
         if (typeof params === "string") {
@@ -3889,6 +3870,10 @@ div[class^="new-summary-container_"] {\r
      * window.OpenBox
      */
     hijackOpenBox() {
+      if (this.$isHook.hijackOpenBox) {
+        return;
+      }
+      this.$isHook.hijackOpenBox = true;
       let OpenBox = function() {
         return {
           open(...args) {
@@ -3943,7 +3928,12 @@ div[class^="new-summary-container_"] {\r
      * window.setTimeout
      * @param matchStr 需要进行匹配的函数字符串
      */
-    hijackSetTimeout(matchStr = "") {
+    hijackSetTimeout(matchStr) {
+      this.$data.hijackSetTimeout.push(matchStr);
+      if (this.$data.hijackSetTimeout.length > 1) {
+        log.info("window.setTimeout hook新增劫持判断参数：" + matchStr);
+        return;
+      }
       _unsafeWindow.setTimeout = function(...args) {
         let callBackString = args[0].toString();
         if (callBackString.match(matchStr)) {
@@ -3964,38 +3954,46 @@ div[class^="new-summary-container_"] {\r
      * Released under the BaiDuTieBa License.
      */
     hijackFunctionCall_WebPack_TieBa() {
-      this.hijackWebpack("webpackJsonp", ["core:0"], function(webpackExports) {
-        if (typeof (webpackExports == null ? void 0 : webpackExports.exports) === "object" && typeof webpackExports.exports["getSchema"] === "function" && typeof webpackExports.exports["getToken"] === "function" && typeof webpackExports.exports["init"] === "function" && typeof webpackExports.exports["initDiffer"] === "function") {
-          log.success(["成功劫持webpack调用函数", webpackExports]);
-          webpackExports == null ? void 0 : webpackExports["i"];
-          webpackExports.exports.getSchema = function(...args) {
-          };
-          webpackExports.exports.getToken = function(...args) {
-            log.info(["阻止调用getToken", ...args]);
-          };
-          webpackExports.exports.init = function(...args) {
-            var _a3;
-            log.info(["阻止初始化", ...args]);
-            if (((_a3 = args == null ? void 0 : args[0]) == null ? void 0 : _a3["page"]) === "usercenter") {
-              let homeUrl = "/home/main?id=" + args[0]["param"]["portrait"];
-              log.info(["跳转至用户空间", homeUrl]);
-              window.open(homeUrl);
-            }
-            return;
-          };
-          webpackExports.exports.initDiffer = function(...args) {
-            log.info(["阻止初始化差异", ...args]);
-            return;
-          };
+      if (this.$isHook.hijackFunctionCall_WebPack_TieBa) {
+        return;
+      }
+      this.$isHook.hijackFunctionCall_WebPack_TieBa = true;
+      this.hijackWebpack(
+        "webpackJsonp",
+        ["core:0"],
+        function(webpackExports) {
+          if (typeof (webpackExports == null ? void 0 : webpackExports.exports) === "object" && typeof webpackExports.exports["getSchema"] === "function" && typeof webpackExports.exports["getToken"] === "function" && typeof webpackExports.exports["init"] === "function" && typeof webpackExports.exports["initDiffer"] === "function") {
+            log.success(["成功劫持webpack调用函数", webpackExports]);
+            webpackExports == null ? void 0 : webpackExports["i"];
+            webpackExports.exports.getSchema = function(...args) {
+            };
+            webpackExports.exports.getToken = function(...args) {
+              log.info(["阻止调用getToken", ...args]);
+            };
+            webpackExports.exports.init = function(...args) {
+              var _a3;
+              log.info(["阻止初始化", ...args]);
+              if (((_a3 = args == null ? void 0 : args[0]) == null ? void 0 : _a3["page"]) === "usercenter") {
+                let homeUrl = "/home/main?id=" + args[0]["param"]["portrait"];
+                log.info(["跳转至用户空间", homeUrl]);
+                window.open(homeUrl);
+              }
+              return;
+            };
+            webpackExports.exports.initDiffer = function(...args) {
+              log.info(["阻止初始化差异", ...args]);
+              return;
+            };
+          }
+          return webpackExports;
         }
-        return webpackExports;
-      });
+      );
     },
     /**
      * 劫持webpack
-     * @param {string} webpackName 当前全局变量的webpack名
-     * @param {string|any[]} mainCoreData 需要劫持的webpack的顶部core，例如：(window.webpackJsonp = window.webpackJsonp || []).push([["core:0"],{}])
-     * @param {(webpackExports: object|undefined)=>{}} checkCallBack 如果mainCoreData匹配上，则调用此回调函数
+     * @param webpackName 当前全局变量的webpack名
+     * @param mainCoreData 需要劫持的webpack的顶部core，例如：(window.webpackJsonp = window.webpackJsonp || []).push([["core:0"],{}])
+     * @param checkCallBack 如果mainCoreData匹配上，则调用此回调函数
      */
     hijackWebpack(webpackName = "webpackJsonp", mainCoreData, checkCallBack) {
       let originObject = void 0;
@@ -4030,24 +4028,32 @@ div[class^="new-summary-container_"] {\r
      *
      */
     hijackFunctionCall_WebPack_HaoKan() {
-      this.hijackWebpack("webpackJsonp", [40, 1], function(webpackExports) {
-        if (typeof (webpackExports == null ? void 0 : webpackExports.exports) === "object" && typeof webpackExports.exports["LaunchScheme"] === "function" && typeof webpackExports.exports["__esModule"] === "boolean") {
-          log.success(["成功劫持webpack调用函数", webpackExports]);
-          webpackExports == null ? void 0 : webpackExports["i"];
-          webpackExports.exports["LaunchScheme"] = function() {
-            log.success(["修改参数：LaunchScheme"]);
-            return {
-              launch() {
-                return new Promise(function(resolve) {
-                  log.success(["修改参数：launch"]);
-                  resolve(void 0);
-                });
-              }
+      if (this.$isHook.hijackFunctionCall_WebPack_HaoKan) {
+        return;
+      }
+      this.$isHook.hijackFunctionCall_WebPack_HaoKan = true;
+      this.hijackWebpack(
+        "webpackJsonp",
+        [40, 1],
+        function(webpackExports) {
+          if (typeof (webpackExports == null ? void 0 : webpackExports.exports) === "object" && typeof webpackExports.exports["LaunchScheme"] === "function" && typeof webpackExports.exports["__esModule"] === "boolean") {
+            log.success(["成功劫持webpack调用函数", webpackExports]);
+            webpackExports == null ? void 0 : webpackExports["i"];
+            webpackExports.exports["LaunchScheme"] = function() {
+              log.success(["修改参数：LaunchScheme"]);
+              return {
+                launch() {
+                  return new Promise(function(resolve) {
+                    log.success(["修改参数：launch"]);
+                    resolve(void 0);
+                  });
+                }
+              };
             };
-          };
+          }
+          return webpackExports;
         }
-        return webpackExports;
-      });
+      );
     },
     /**
      * 劫持百家号和百度地图的Function的call
@@ -4056,6 +4062,10 @@ div[class^="new-summary-container_"] {\r
      * Function.property.call
      */
     hijackFunctionCall_BaiJiaHao_Map() {
+      if (this.$isHook.hijackFunctionCall_BaiJiaHao_Map) {
+        return;
+      }
+      this.$isHook.hijackFunctionCall_BaiJiaHao_Map = true;
       _unsafeWindow.Function.prototype.call = function(...args) {
         if (args.length === 2 && args[0] === void 0 && args[1] != null && "arg" in args[1] && "delegate" in args[1] && "done" in args[1] && "method" in args[1] && "next" in args[1] && "prev" in args[1]) {
           log.success(["修改参数", args[1]]);
@@ -4074,6 +4084,10 @@ div[class^="new-summary-container_"] {\r
      * window.BoxJSBefore
      */
     hijackBoxJSBefore() {
+      if (this.$isHook.hijackBoxJSBefore) {
+        return;
+      }
+      this.$isHook.hijackBoxJSBefore = true;
       OriginPrototype.Object.defineProperty(_unsafeWindow, "BoxJSBefore", {
         get() {
           return new Proxy(
@@ -4090,7 +4104,7 @@ div[class^="new-summary-container_"] {\r
   };
   const BaiduSearchHook = {
     init() {
-      PopsPanel.execMenu("baidu_search_hijack_define", () => {
+      PopsPanel.execMenuOnce("baidu_search_hijack_define", () => {
         log.success("hook: window.define");
         OriginPrototype.Object.defineProperty(_unsafeWindow, "define", {
           get(...args) {
@@ -4099,30 +4113,23 @@ div[class^="new-summary-container_"] {\r
           }
         });
       });
-      PopsPanel.execMenu("baidu_search_hijack__onClick", () => {
+      PopsPanel.execMenuOnce("baidu_search_hijack__onClick", () => {
         log.success("hooke: baidu onClick");
         BaiduHook.hijack_onClick("baidu_search_hijack__onClick");
       });
-      PopsPanel.execMenu("baidu_search_hijack_openbox", () => {
+      PopsPanel.execMenuOnce("baidu_search_hijack_openbox", () => {
         log.success("hook: window.OpenBox");
         BaiduHook.hijackOpenBox();
       });
-      if (PopsPanel.getValue("baidu_search_hijack_scheme") || PopsPanel.getValue("baidu_search_hijack_copy")) {
-        if (PopsPanel.getValue("baidu_search_hijack_scheme") && PopsPanel.getValue("baidu_search_hijack_copy")) {
-          log.success("hook: Function.apply => copy scheme");
-          BaiduHook.hijackFunctionApply("copy scheme");
-        } else {
-          PopsPanel.execMenu("baidu_search_hijack_scheme", () => {
-            log.success("hook: Function.apply => scheme");
-            BaiduHook.hijackFunctionApply("scheme");
-          });
-          PopsPanel.execMenu("baidu_search_hijack_copy", () => {
-            log.success("hook: Function.apply => copy");
-            BaiduHook.hijackFunctionApply("copy");
-          });
-        }
-      }
-      PopsPanel.execMenu("baidu_search_hijack_setTimeout", () => {
+      PopsPanel.execMenuOnce("baidu_search_hijack_scheme", () => {
+        log.success("hook: Function.apply => scheme");
+        BaiduHook.hijackFunctionApply("scheme");
+      });
+      PopsPanel.execMenuOnce("baidu_search_hijack_copy", () => {
+        log.success("hook: Function.apply => copy");
+        BaiduHook.hijackFunctionApply("copy");
+      });
+      PopsPanel.execMenuOnce("baidu_search_hijack_setTimeout", () => {
         BaiduHook.hijackSetTimeout("getGeoLocation|loopPlay()");
       });
     }
@@ -4834,20 +4841,37 @@ div[class^="new-summary-container_"] {\r
   };
   const SearchNextPage = {
     /**
-     * 当前页
+     * 初始页面的信息
      */
-    currentPage: 1,
+    initPageInfo: null,
+    /**
+     * 本页的信息，自动跟随请求下一页更新数据
+     */
+    pageInfo: null,
+    /**
+     * 本页的下一页的信息
+     */
+    nextPageInfo: null,
     /**
      * 观察器
      */
     intersectionObserver: null,
     init() {
       this.initPageLineCSS();
+      _GM_addStyle(`
+		/* 隐藏分页控制器 */
+		#page-controller{
+			display: none !important;
+		}
+		`);
       loadingView.initLoadingView(true);
-      domutils.after(
-        document.querySelector("#page-controller"),
-        loadingView.getLoadingViewElement()
-      );
+      let $loadingViewPrev = document.querySelector("#page-controller") || document.querySelector("#page-bd");
+      if ($loadingViewPrev) {
+        domutils.after($loadingViewPrev, loadingView.getLoadingViewElement());
+      } else {
+        log.error("未找到可以在后面插入加载中的元素");
+        return;
+      }
       this.setNextPageLoadingObserver();
     },
     /**
@@ -4923,39 +4947,172 @@ div[class^="new-summary-container_"] {\r
       }
     },
     /**
+     * 把参数pn转换为页码
+     * pn: 10
+     * pageNum: 2
+     * @param pn 10的倍数
+     */
+    parseParamPnToPageNum(pn) {
+      pn = parseInt(pn);
+      if (isNaN(pn)) {
+        throw new TypeError("pn参数解析失败");
+      }
+      let pageNum = pn / 10 + 1;
+      return pageNum;
+    },
+    /**
+     * 把页码转为参数pn
+     * pageNum: 2
+     * pn: 10
+     * @param pageNum
+     */
+    parsePageNumToParamPn(pageNum) {
+      pageNum = parseInt(pageNum);
+      if (isNaN(pageNum)) {
+        throw new TypeError("页码解析失败");
+      }
+      let pn = (pageNum - 1) * 10;
+      return pn;
+    },
+    /**
+     * 解析分页控制器的元素的下一页信息
+     */
+    parseNextPageInfoWithPageController($pageController) {
+      var _a3, _b;
+      let nextPageUrl = ((_a3 = $pageController.querySelector(
+        ".new-nextpage"
+      )) == null ? void 0 : _a3.href) || ((_b = $pageController.querySelector(
+        ".new-nextpage-only"
+      )) == null ? void 0 : _b.href);
+      if (nextPageUrl) {
+        let param_pn_match = new URL(nextPageUrl).search.match(/[0-9]+/);
+        if (param_pn_match == null) {
+          log.warn("获取不到pn参数");
+          return;
+        }
+        let param_pn = parseInt(param_pn_match[0]);
+        let pageNum = this.parseParamPnToPageNum(param_pn);
+        return {
+          pn: param_pn,
+          pageNum,
+          nextPageUrl: this.fixNextPageUrl(nextPageUrl)
+        };
+      }
+      return;
+    },
+    /**
+     * 修复下一页的url
+     * 有时候获取到的下一页的url的hostname和当前页面的hostname不同
+     * 因为使用的fetch，不能跨域
+     * 所以需要把下一页的url的hostname替换成当前页面的hostname
+     */
+    fixNextPageUrl(url) {
+      let urlObj = new URL(url);
+      let newUrl = url;
+      if (urlObj.hostname !== window.location.hostname) {
+        urlObj.hostname = window.location.hostname;
+        newUrl = urlObj.toString();
+        log.success("成功修复下一页的链接的不同域名：" + newUrl);
+      }
+      return newUrl;
+    },
+    /**
+     * 初始化获取本页的页码信息
+     */
+    getInitPageInfo() {
+      var _a3, _b, _c, _d;
+      let initPageInfo = this.parseNextPageInfoWithPageController(document);
+      if (initPageInfo) {
+        initPageInfo.pageNum = initPageInfo.pageNum - 1;
+        initPageInfo.pn = initPageInfo.pn - 10;
+        return initPageInfo;
+      } else {
+        if (typeof ((_b = (_a3 = _unsafeWindow == null ? void 0 : _unsafeWindow.page) == null ? void 0 : _a3.comm) == null ? void 0 : _b.pn) !== "number") {
+          log.warn("page.comm.pn参数未定义");
+          return;
+        }
+        if (typeof ((_d = (_c = _unsafeWindow == null ? void 0 : _unsafeWindow.page) == null ? void 0 : _c.comm) == null ? void 0 : _d.pageNum) !== "number") {
+          log.warn("page.comm.pageNum参数未定义");
+          return;
+        }
+        let pn = _unsafeWindow.page.comm.pn;
+        let pageNum = _unsafeWindow.page.comm.pageNum;
+        let query = _unsafeWindow.page.comm.query || _unsafeWindow.page.comm.prequery || _unsafeWindow.page.comm.rawQuery;
+        let nextPageObj = new URL(window.location.origin);
+        nextPageObj.pathname = "/s";
+        nextPageObj.searchParams.append(
+          "from",
+          _unsafeWindow.page.comm.from
+        );
+        nextPageObj.searchParams.append("ssid", "0");
+        nextPageObj.searchParams.append("pn", pn + 10);
+        nextPageObj.searchParams.append("usm", "");
+        nextPageObj.searchParams.append("word", query);
+        nextPageObj.searchParams.append("rtime", "");
+        nextPageObj.searchParams.append("vfeed", "1024");
+        nextPageObj.searchParams.append("sa", "np");
+        nextPageObj.searchParams.append("ms", "1");
+        nextPageObj.searchParams.append("params_ssrt", "node-san");
+        nextPageObj.searchParams.append("suv", "");
+        nextPageObj.searchParams.append("cv", "1.0.14");
+        nextPageObj.searchParams.append("mod", "0");
+        nextPageObj.searchParams.append("async", "1");
+        let nextPageUrl = nextPageObj.toString();
+        return {
+          pn,
+          pageNum,
+          nextPageUrl: this.fixNextPageUrl(nextPageUrl)
+        };
+      }
+    },
+    /**
+     * 添加第xx页的分割线
+     * @param num 分页
+     */
+    appendLineDriver(num) {
+      let currentResultsDOM = document.querySelector("#results");
+      currentResultsDOM.appendChild(SearchNextPage.getPageLineElement(num));
+    },
+    /**
      * 滚动事件
      * @async
      */
     async scrollEvent() {
-      var _a3, _b;
-      log.success(`正在加载第 ${SearchNextPage.currentPage} 页`);
-      let nextPageUrl = ((_a3 = document.querySelector(".new-nextpage")) == null ? void 0 : _a3.getAttribute("href")) || ((_b = document.querySelector(".new-nextpage-only")) == null ? void 0 : _b.getAttribute("href"));
-      if (!nextPageUrl) {
-        log.warn("获取不到下一页，怀疑已加载所有的搜索结果");
+      if (this.initPageInfo == null) {
+        let pageInfo = this.getInitPageInfo();
+        if (!pageInfo) {
+          log.warn("初始化失败，未获取到本页信息");
+          SearchNextPage.removeNextPageLoadingObserver();
+          return;
+        }
+        this.initPageInfo = null;
+        this.initPageInfo = pageInfo;
+        this.pageInfo = null;
+        this.pageInfo = pageInfo;
+        this.nextPageInfo = null;
+        this.nextPageInfo = {
+          pn: pageInfo.pn + 10,
+          pageNum: pageInfo.pageNum + 1,
+          nextPageUrl: pageInfo.nextPageUrl
+        };
+      }
+      if (this.nextPageInfo == null) {
+        log.warn("不存在下一页，移除监听");
         SearchNextPage.removeNextPageLoadingObserver();
         return;
       }
-      let params_pn = new URL(nextPageUrl).search.match(/[0-9]+/);
-      if (params_pn == null) {
-        log.warn("获取不到pn参数");
+      log.success(`当前第 ${this.pageInfo.pageNum} 页，pn：${this.pageInfo.pn}`);
+      log.success(
+        `请求第 ${this.nextPageInfo.pageNum} 页，pn：${this.nextPageInfo.pn}`
+      );
+      if (!this.nextPageInfo.nextPageUrl) {
+        log.warn("获取不到下一页Url，怀疑已加载所有的搜索结果");
+        SearchNextPage.removeNextPageLoadingObserver();
         return;
       }
-      let pn = parseInt(params_pn[0]);
-      log.info(
-        `正在请求${params_pn.length === 0 ? "第 10 条" : "第 " + pn + " 条"}数据: ${nextPageUrl}`
-      );
-      SearchNextPage.currentPage = parseInt((pn / 10).toString());
       loadingView.setText("Loading...", true);
-      let nextPageUrlObj = new URL(nextPageUrl);
-      if (nextPageUrlObj.hostname !== window.location.hostname) {
-        nextPageUrl = nextPageUrl.replace(
-          new RegExp(`^${nextPageUrlObj.origin}`),
-          window.location.origin
-        );
-        log.success("修复下一页的链接的不同域名：" + nextPageUrl);
-      }
       let getResp = await httpx.get({
-        url: nextPageUrl,
+        url: this.nextPageInfo.nextPageUrl,
         fetch: true
       });
       let respData = getResp.data;
@@ -4987,30 +5144,55 @@ div[class^="new-summary-container_"] {\r
         let nextPageControllerDOM = nextPageHTMLNode.querySelector("#page-controller");
         let currentResultsDOM = document.querySelector("#results");
         if (nextPageControllerDOM) {
-          currentResultsDOM.appendChild(
-            SearchNextPage.getPageLineElement(SearchNextPage.currentPage)
-          );
+          this.appendLineDriver(this.pageInfo.pageNum);
+          let nextPageSearchResultFragment = document.createDocumentFragment();
           searchResultDOM.forEach((item) => {
-            currentResultsDOM.appendChild(item);
+            nextPageSearchResultFragment.appendChild(item);
           });
-          domutils.html(
-            document.querySelector("#page-controller"),
-            nextPageControllerDOM.innerHTML
-          );
+          currentResultsDOM.appendChild(nextPageSearchResultFragment);
+          if (PopsPanel.getValue("baidu_search_sync_next_page_address")) {
+            window.history.pushState(
+              "forward",
+              "",
+              this.nextPageInfo.nextPageUrl
+            );
+          }
+          if (SearchResultEveryOneSearch.refactorEveryoneIsStillSearching) {
+            SearchResultEveryOneSearch.handleBottom(
+              Array.from(nextPageHTMLNode.querySelectorAll("#page-relative"))
+            );
+          }
+          let nextNextPageInfo = this.parseNextPageInfoWithPageController(nextPageHTMLNode);
+          if (nextNextPageInfo) {
+            if (nextNextPageInfo.pageNum > this.nextPageInfo.pageNum) {
+              let nextPageInfo = this.nextPageInfo;
+              this.pageInfo = null;
+              this.nextPageInfo = null;
+              this.pageInfo = nextPageInfo;
+              this.nextPageInfo = nextNextPageInfo;
+            } else {
+              let nextPageInfo = this.nextPageInfo;
+              this.pageInfo = null;
+              this.nextPageInfo = null;
+              this.pageInfo = nextPageInfo;
+              log.warn("下下一页的页码<=当前页码，取消监听");
+              SearchNextPage.removeNextPageLoadingObserver();
+            }
+          } else {
+            let nextPageInfo = this.nextPageInfo;
+            this.pageInfo = null;
+            this.nextPageInfo = null;
+            this.pageInfo = nextPageInfo;
+            log.warn("获取不到下下一页的页码，怀疑已经加载全部结果");
+            SearchNextPage.removeNextPageLoadingObserver();
+            this.appendLineDriver(this.pageInfo.pageNum);
+          }
         } else {
           log.info("已加载所有的搜索结果");
           SearchNextPage.removeNextPageLoadingObserver();
         }
-        if (PopsPanel.getValue("baidu_search_sync_next_page_address")) {
-          window.history.pushState("forward", "", nextPageUrl);
-        }
-        if (SearchResultEveryOneSearch.refactorEveryoneIsStillSearching) {
-          SearchResultEveryOneSearch.handleBottom(
-            Array.from(nextPageHTMLNode.querySelectorAll("#page-relative"))
-          );
-        }
       } else if (getResp.type === "onerror") {
-        if (utils.isNull(nextPageUrl)) {
+        if (utils.isNull(this.nextPageInfo.nextPageUrl)) {
           log.error("未获取到下一页的url");
         } else {
           log.error("加载失败 👇");
@@ -8804,7 +8986,7 @@ div[class^="new-summary-container_"] {\r
         TiebaPost.optimizeImagePreview();
       });
       PopsPanel.execMenu("baidu_tieba_repairErrorThread", () => {
-        log.success("强制查看-贴子不存在或者已被删除");
+        log.success("强制查看-帖子不存在|帖子已被删除|该帖子需要去app内查看哦");
         TiebaPost.repairErrorThread();
       });
     },
@@ -8836,33 +9018,40 @@ div[class^="new-summary-container_"] {\r
         viewer.zoomTo(1);
         viewer.show();
       }
-      domutils.on(document, "click", "img", function(event) {
-        let clickElement = event.target;
-        let clickParentElement = clickElement.parentElement;
-        let imgSrc = clickElement.getAttribute("data-src") || clickElement.getAttribute("src");
-        if (clickParentElement.className === "viewer-canvas" || clickParentElement.hasAttribute("data-viewer-action")) {
-          return;
-        }
-        if (imgSrc == null ? void 0 : imgSrc.match(/^http(s|):\/\/(tiebapic|imgsa).baidu.com\/forum/g)) {
-          log.info(`点击图片👇`);
-          log.info(clickElement);
-          if (clickParentElement.className === "img-box") {
-            let parentMain = clickElement.closest(".img-sudoku.main-img-sudoku");
-            log.info(parentMain);
-            if (!parentMain) {
-              viewIMG([imgSrc]);
-              return;
-            }
-            utils.preventEvent(event);
-            let lazyImgList = [];
-            if (TiebaPost.mainPostImgList.length) {
-              TiebaPost.mainPostImgList.forEach((item) => {
-                lazyImgList.push(item.src);
-              });
-            } else {
-              Array.from(parentMain.querySelectorAll("img.img")).forEach(
-                (item) => {
-                  let _imgSrc_ = item.getAttribute("data-src") || item.getAttribute("src");
+      domutils.on(
+        document,
+        "click",
+        "img",
+        function(event) {
+          let clickElement = event.target;
+          let clickParentElement = clickElement.parentElement;
+          let imgSrc = clickElement.getAttribute("data-src") || clickElement.getAttribute("src");
+          if (clickParentElement.className === "viewer-canvas" || clickParentElement.hasAttribute("data-viewer-action")) {
+            return;
+          }
+          if (imgSrc == null ? void 0 : imgSrc.match(/^http(s|):\/\/(tiebapic|imgsa).baidu.com\/forum/g)) {
+            log.info(`点击图片👇`);
+            log.info(clickElement);
+            if (clickParentElement.className === "img-box") {
+              let parentMain = clickElement.closest(
+                ".img-sudoku.main-img-sudoku"
+              );
+              log.info(parentMain);
+              if (!parentMain) {
+                viewIMG([imgSrc]);
+                return;
+              }
+              utils.preventEvent(event);
+              let lazyImgList = [];
+              if (TiebaPost.mainPostImgList.length) {
+                TiebaPost.mainPostImgList.forEach((item) => {
+                  lazyImgList.push(item.src);
+                });
+              } else {
+                Array.from(
+                  parentMain.querySelectorAll("img.img")
+                ).forEach((item) => {
+                  let _imgSrc_ = item.getAttribute("data-src") || item.src;
                   log.info(`获取图片: ${_imgSrc_}`);
                   let imgUrlInfo = new URL(_imgSrc_);
                   if (imgUrlInfo.pathname.startsWith("/forum/")) {
@@ -8877,40 +9066,40 @@ div[class^="new-summary-container_"] {\r
                     }
                   }
                   lazyImgList.push(_imgSrc_);
-                }
-              );
-            }
-            log.info("图片列表👇");
-            log.info(lazyImgList);
-            viewIMG(lazyImgList, lazyImgList.indexOf(imgSrc));
-          } else if (clickParentElement.className === "text-content") {
-            let lazyImgList = [];
-            log.info(clickParentElement);
-            clickParentElement.querySelectorAll("img.BDE_Image").forEach((item) => {
-              let _imgSrc_ = item.getAttribute("data-src") || item.getAttribute("src");
-              log.info(`获取图片: ${_imgSrc_}`);
-              let imgUrlInfo = new URL(_imgSrc_);
-              if (imgUrlInfo.pathname.startsWith("/forum/")) {
-                let picName = imgUrlInfo.pathname.split("/").pop();
-                let picIdSplit = picName == null ? void 0 : picName.split(".");
-                if (picIdSplit) {
-                  let picId = picIdSplit[0];
-                  if (TiebaData.imageMap.has(picId)) {
-                    _imgSrc_ = TiebaData.imageMap.get(picId);
-                    log.success(["替换成高清图片", _imgSrc_]);
+                });
+              }
+              log.info("图片列表👇");
+              log.info(lazyImgList);
+              viewIMG(lazyImgList, lazyImgList.indexOf(imgSrc));
+            } else if (clickParentElement.className === "text-content") {
+              let lazyImgList = [];
+              log.info(clickParentElement);
+              clickParentElement.querySelectorAll("img.BDE_Image").forEach((item) => {
+                let _imgSrc_ = item.getAttribute("data-src") || item.src;
+                log.info(`获取图片: ${_imgSrc_}`);
+                let imgUrlInfo = new URL(_imgSrc_);
+                if (imgUrlInfo.pathname.startsWith("/forum/")) {
+                  let picName = imgUrlInfo.pathname.split("/").pop();
+                  let picIdSplit = picName == null ? void 0 : picName.split(".");
+                  if (picIdSplit) {
+                    let picId = picIdSplit[0];
+                    if (TiebaData.imageMap.has(picId)) {
+                      _imgSrc_ = TiebaData.imageMap.get(picId);
+                      log.success(["替换成高清图片", _imgSrc_]);
+                    }
                   }
                 }
-              }
-              lazyImgList.push(_imgSrc_);
-            });
-            log.info("评论区图片列表👇");
-            log.info(lazyImgList);
-            viewIMG(lazyImgList, lazyImgList.indexOf(imgSrc));
-          } else {
-            viewIMG([imgSrc]);
+                lazyImgList.push(_imgSrc_);
+              });
+              log.info("评论区图片列表👇");
+              log.info(lazyImgList);
+              viewIMG(lazyImgList, lazyImgList.indexOf(imgSrc));
+            } else {
+              viewIMG([imgSrc]);
+            }
           }
         }
-      });
+      );
       _GM_addStyle(`
 		/* 图片右上角的APP专享 */
 		div.img-sudoku .img-desc{
@@ -8987,7 +9176,8 @@ div[class^="new-summary-container_"] {\r
       }
     },
     /**
-     * 强制查看-贴子不存在或者已被删除
+     * 强制查看-帖子不存在|帖子已被删除|该帖子需要去app内查看哦
+     *
      */
     repairErrorThread() {
       async function getPageInfo() {
@@ -9016,18 +9206,16 @@ div[class^="new-summary-container_"] {\r
         let field = utils.toJSON(postListFirstElement.getAttribute("data-field"));
         let PageData = null;
         let PageDataScriptString = "";
-        Array.from(pageDOM.querySelectorAll("script")).forEach(
-          (scriptElement) => {
-            if (scriptElement.innerHTML.includes("var PageData")) {
-              PageDataScriptString = `
-                ${PageDataScriptString}
+        pageDOM.querySelectorAll("script").forEach((scriptElement) => {
+          if (scriptElement.innerHTML.includes("var PageData")) {
+            PageDataScriptString = `
+						${PageDataScriptString}
 
-                ${scriptElement.innerHTML}
+						${scriptElement.innerHTML}
 
-                `;
-            }
+						`;
           }
-        );
+        });
         if (PageDataScriptString === "") {
           log.error("未找到 PageData的script标签");
           Qmsg.error("未找到 PageData的script标签");
@@ -9107,7 +9295,7 @@ div[class^="new-summary-container_"] {\r
           log.error("元素.app-view不存在");
           return;
         }
-        utils.waitVueByInterval(
+        await utils.waitVueByInterval(
           $appView,
           () => {
             var _a3;
@@ -9118,11 +9306,13 @@ div[class^="new-summary-container_"] {\r
         );
         let appViewVue = CommonUtil.getVue($appView);
         if (!(appViewVue && appViewVue.isErrorThread)) {
+          log.info("验证参数isErrorThread：true，正常帖子");
           return;
         }
         log.warn("该帖子不能查看 修复中...");
-        Qmsg.info("该帖子不能查看 修复中...");
+        let loading = Qmsg.loading("该帖子不能查看 修复中...");
         let pageInfo = await getPageInfo();
+        loading.close();
         if (!pageInfo) {
           return;
         }
@@ -9170,12 +9360,16 @@ div[class^="new-summary-container_"] {\r
         appViewVue.postNum = 100;
         appViewVue.isErrorThread = false;
         setTimeout(() => {
+          var _a3, _b;
           domutils.append(
             document.querySelector(
               "div.app-view div.thread-main-wrapper .thread-text"
             ),
             postList[0].content[0].text
           );
+          if (appViewVue.interactionNum && typeof ((_b = (_a3 = pageInfo == null ? void 0 : pageInfo.PageData) == null ? void 0 : _a3.thread) == null ? void 0 : _b.reply_num) === "number") {
+            appViewVue.interactionNum.reply = pageInfo.PageData.thread.reply_num;
+          }
         }, 300);
       });
     }
@@ -17162,7 +17356,7 @@ div[class^="new-summary-container_"] {\r
         TiebaCore.clientCallMasquerade();
       });
       BaiduHook.hijackElementAppendChild();
-      PopsPanel.execMenu("baidu_tieba_hijack_wake_up", () => {
+      PopsPanel.execMenuOnce("baidu_tieba_hijack_wake_up", () => {
         BaiduHook.hijackFunctionCall_WebPack_TieBa();
       });
       if (BaiduRouter.isTieBaIndex()) {
