@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         俺的手机视频脚本
 // @description  全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
-// @version      1.6.26
+// @version      1.7.0
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -40,15 +40,15 @@
                     let listenTargetArray = document.getElementsByClassName("player-controls-background");
                     if (videos.length > 0) {
                         let video = videos[0];
-                        //防止重复添加
-                        if (video.getParameter("me_video_js")) {
-                            return;
-                        }
                         //非静音播放中
                         if (video.readyState > 1 && !video.paused && !video.muted) {
-                            video.setParameter("me_video_js", "me_video_js");
-                            //视频已加载
                             listenTarget = listenTargetArray[0];
+                            //防止重复添加
+                            if (listenTarget.getAttribute("me_video_js")) {
+                                return;
+                            }
+                            listenTarget.setAttribute("me_video_js", "me_video_js");
+                            //视频已加载
                             console.log("俺的手机视频脚本：开始监听手势。");
                             listen();
                             return;
