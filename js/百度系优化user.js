@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【移动端】百度系优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2024.7.5
+// @version      2024.7.6.14
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @license      GPL-3.0-only
@@ -590,6 +590,13 @@
       } else {
         (_a3 = this.getIconElement()) == null ? void 0 : _a3.remove();
       }
+    }
+    /**
+     * 设置超文本
+     * @param text 文本
+     */
+    setHTML(text) {
+      this.getLoadingViewElement().innerHTML = text;
     }
     /**
      * 删除Loading元素
@@ -4004,6 +4011,68 @@ match-attr##srcid##sp_purc_atom
       }
     }
   };
+  const CommonUtils = {
+    /**
+     * 添加屏蔽CSS
+     * @param args
+     * @example
+     * addBlockCSS("")
+     * addBlockCSS("","")
+     * addBlockCSS(["",""])
+     */
+    addBlockCSS(...args) {
+      let selectorList = [];
+      if (args.length === 0) {
+        return;
+      }
+      if (args.length === 1 && typeof args[0] === "string" && args[0].trim() === "") {
+        return;
+      }
+      args.forEach((selector) => {
+        if (Array.isArray(selector)) {
+          selectorList = selectorList.concat(selector);
+        } else {
+          selectorList.push(selector);
+        }
+      });
+      addStyle(`${selectorList.join(",\n")}{display: none !important;}`);
+    },
+    /**
+     * 设置GM_getResourceText的style内容
+     * @param resourceMapData 资源数据
+     */
+    setGMResourceCSS(resourceMapData) {
+      let cssText = typeof _GM_getResourceText === "function" ? _GM_getResourceText(resourceMapData.keyName) : "";
+      if (typeof cssText === "string" && cssText) {
+        addStyle(cssText);
+      } else {
+        CommonUtils.addLinkNode(resourceMapData.url);
+      }
+    },
+    /**
+     * 添加<link>标签
+     * @param url
+     */
+    async addLinkNode(url) {
+      let $link = document.createElement("link");
+      $link.rel = "stylesheet";
+      $link.type = "text/css";
+      $link.href = url;
+      domutils.ready(() => {
+        document.head.appendChild($link);
+      });
+    }
+  };
+  const GM_RESOURCE_MAP = {
+    ElementPlus: {
+      keyName: "ElementPlusResourceCSS",
+      url: "https://fastly.jsdelivr.net/npm/element-plus@latest/dist/index.min.css"
+    },
+    Viewer: {
+      keyName: "ViewerCSS",
+      url: "https://fastly.jsdelivr.net/npm/viewerjs@latest/dist/viewer.min.css"
+    }
+  };
   const _SCRIPT_NAME_ = "【移动端】百度系优化";
   const utils = Utils.noConflict();
   const domutils = DOMUtils.noConflict();
@@ -4117,7 +4186,7 @@ match-attr##srcid##sp_purc_atom
       app.mount($mount);
     });
     {
-      addStyle(_GM_getResourceText("ElementPlusResourceCSS"));
+      CommonUtils.setGMResourceCSS(GM_RESOURCE_MAP.ElementPlus);
     }
   };
   const SearchShieldCSS = `.c-container.na-ec-item,\r
@@ -4310,33 +4379,6 @@ div[class^="new-summary-container_"] {\r
 }\r
 `;
   const SearchHealthShieldCSS = '/* 右下角悬浮的健康直播间图标按钮 */\r\ndiv[class^="index_brandEntry"] {\r\n  display: none !important;\r\n}\r\n';
-  const CommonUtils = {
-    /**
-     * 添加屏蔽CSS
-     * @param args
-     * @example
-     * addBlockCSS("")
-     * addBlockCSS("","")
-     * addBlockCSS(["",""])
-     */
-    addBlockCSS(...args) {
-      let selectorList = [];
-      if (args.length === 0) {
-        return;
-      }
-      if (args.length === 1 && typeof args[0] === "string" && args[0].trim() === "") {
-        return;
-      }
-      args.forEach((selector) => {
-        if (Array.isArray(selector)) {
-          selectorList = selectorList.concat(selector);
-        } else {
-          selectorList.push(selector);
-        }
-      });
-      addStyle(`${selectorList.join(",\n")}{display: none !important;}`);
-    }
-  };
   const BaiduHeadlth = {
     init() {
       PopsPanel.execMenu("baidu_search_headlth_shield_other_info", () => {
@@ -8602,10 +8644,10 @@ div[class^="new-summary-container_"] {\r
         }
       ]);
       Toolbar.updateEnvParam();
-      this.addStyle();
+      this.initCSS();
       this.setUserCommentHandler();
     },
-    addStyle() {
+    initCSS() {
       addStyle(`
 		/* 去除底部高度设定 */
 		.pb-page-wrapper{
@@ -9241,15 +9283,6 @@ div[class^="new-summary-container_"] {\r
      * @returns
      */
     scrollEvent(isNext, pageDOM, pageCommentList) {
-      if (!pageDOM || typeof pageDOM === "string" || !(pageCommentList == null ? void 0 : pageCommentList.commentList)) {
-        loadingView.setText(
-          typeof pageDOM === "string" ? pageDOM : "获取评论失败"
-        );
-        log.error(pageDOM);
-        log.error(pageCommentList);
-        TiebaComment.removeScrollListener();
-        return;
-      }
       log.info("成功获取评论和楼中楼评论");
       let comments = Array.from(
         pageDOM.querySelectorAll(".l_post.l_post_bright")
@@ -9318,10 +9351,23 @@ div[class^="new-summary-container_"] {\r
       let nextPageAllCommentUrl = TiebaUrlApi.getPost(
         `totalComment?t=${timeStamp}&tid=${TiebaComment.param_tid}&fid=${TiebaComment.param_forum_id}&pn=${TiebaComment.page}&see_lz=0${TiebaComment.extraSearchSignParams}`
       );
-      let pageDOM = await TiebaComment.getPageComment(nextPageUrl);
+      let pageCommentInfo = await TiebaComment.getPageComment(nextPageUrl);
+      if (!pageCommentInfo.success) {
+        loadingView.setHTML(
+          `<a href="${pageCommentInfo.data}">触发百度安全校验，点击前往验证</a>`
+        );
+        return;
+      }
+      let pageDOM = pageCommentInfo.data;
       let pageCommentList = await TiebaComment.getPageCommentList(
         nextPageAllCommentUrl
       );
+      if (pageCommentList == null || pageCommentList.commentList && !pageCommentList.commentList) {
+        loadingView.setText("获取评论失败");
+        log.error("获取评论失败");
+        TiebaComment.removeScrollListener();
+        return;
+      }
       TiebaComment.scrollEvent(true, pageDOM, pageCommentList);
     },
     /**
@@ -9343,10 +9389,22 @@ div[class^="new-summary-container_"] {\r
       let pageAllCommentUrl = TiebaUrlApi.getPost(
         `totalComment?t=${timeStamp}&tid=${TiebaComment.param_tid}&fid=${TiebaComment.param_forum_id}&pn=${TiebaComment.page}&see_lz=0${TiebaComment.extraSearchSignParams}`
       );
-      let pageDOM = await TiebaComment.getPageComment(pageUrl);
+      let pageCommentInfo = await TiebaComment.getPageComment(pageUrl);
+      if (!pageCommentInfo.success) {
+        loadingView.setHTML(
+          `<a href="${pageCommentInfo.data}">触发百度安全校验，点击前往验证</a>`
+        );
+        return;
+      }
+      let pageDOM = pageCommentInfo.data;
       let pageCommentList = await TiebaComment.getPageCommentList(
         pageAllCommentUrl
       );
+      if (pageCommentList == null || pageCommentList.commentList && !pageCommentList.commentList) {
+        loadingView.setText("评论数据获取失败");
+        log.error("评论数据获取失败");
+        return;
+      }
       TiebaComment.scrollEvent(false, pageDOM, pageCommentList);
     },
     /**
@@ -9355,8 +9413,7 @@ div[class^="new-summary-container_"] {\r
     setNextPageScrollListener() {
       TiebaComment.funcLock = new utils.LockFunction(
         TiebaComment.nextPageScrollEvent,
-        this,
-        void 0
+        this
       );
       document.addEventListener("scroll", TiebaComment.funcLock.run);
       utils.dispatchEvent(document, "scroll", { jsTrigger: true });
@@ -10443,23 +10500,42 @@ div[class^="new-summary-container_"] {\r
         if (pageCommentHTMLElement.title === "百度安全验证" || respData.finalUrl.startsWith("https://wappass.baidu.com")) {
           log.error("触发百度安全验证 👇" + respData.finalUrl);
           log.error(respData);
-          return "触发百度安全验证";
+          return {
+            success: false,
+            msg: "触发百度安全验证",
+            data: respData.finalUrl
+          };
         } else {
-          return pageCommentHTMLElement;
+          return {
+            success: true,
+            msg: "获取成功",
+            data: pageCommentHTMLElement
+          };
         }
       } else if (getResp.type === "onerror") {
         if (typeof respData.error === "string" && respData.error.match("wappass.baidu.com")) {
           let url2 = respData.error.match(/"(.*?)"/)[1];
           log.error("触发百度校验: " + url2);
-          let gotoBaiduWappass = confirm("触发百度安全验证，是否前往：" + url2);
-          if (gotoBaiduWappass) {
-            window.location.href = url2;
-          }
+          return {
+            success: false,
+            msg: "触发百度安全验证",
+            data: url2
+          };
         } else {
           log.error("获取评论数据失败 👇");
           log.error(respData);
+          return {
+            success: false,
+            msg: "获取评论数据失败",
+            data: null
+          };
         }
       }
+      return {
+        success: false,
+        msg: "未知状态",
+        data: null
+      };
     },
     /**
      * 获取第XX页的所有评论
@@ -10662,6 +10738,7 @@ div[class^="new-summary-container_"] {\r
      * 查看-正序
      */
     async mainPositive() {
+      log.info("查看-正序");
       TiebaComment.param_tid = TiebaCore.getCurrentForumPostTid();
       if (!TiebaComment.param_tid) {
         log.error("贴吧：未找到本页参数p");
@@ -10670,20 +10747,28 @@ div[class^="new-summary-container_"] {\r
       TiebaComment.param_forum_id = TiebaPageDataApi.getForumId();
       if (!TiebaComment.param_forum_id) {
         let recommendItemElement = await utils.waitNode(
-          ".recommend-item"
+          ".recommend-item",
+          5e3
         );
-        await utils.waitPropertyByInterval(
-          recommendItemElement,
-          () => {
-            return recommendItemElement.hasAttribute("data-banner-info");
-          },
-          250,
-          1e4
-        );
-        TiebaComment.param_forum_id = TiebaPageDataApi.getForumId();
-      }
-      if (!TiebaComment.param_forum_id) {
-        return log.error("贴吧：获取参数data-banner-info失败");
+        if (recommendItemElement) {
+          await utils.waitPropertyByInterval(
+            recommendItemElement,
+            () => {
+              return recommendItemElement.hasAttribute("data-banner-info");
+            },
+            250,
+            1e4
+          );
+          TiebaComment.param_forum_id = TiebaPageDataApi.getForumId();
+          if (!TiebaComment.param_forum_id) {
+            log.error("贴吧：获取参数data-banner-info失败");
+            return;
+          }
+        } else {
+          log.error("获取元素.recommend-item失败");
+          Qmsg.error("获取元素.recommend-item失败");
+          return;
+        }
       }
       let timeStamp = Date.now();
       TiebaComment.page = 1;
@@ -10695,17 +10780,17 @@ div[class^="new-summary-container_"] {\r
       let pageUrl = TiebaUrlApi.getPost(
         `${TiebaComment.param_tid}?pn=${TiebaComment.page}${TiebaComment.extraSearchSignParams}`
       );
-      let pageDOM = await TiebaComment.getPageComment(pageUrl);
-      let pageCommentList = await TiebaComment.getPageCommentList(url);
-      if (pageCommentList == null) {
-        loadingView.setText("获取评论失败");
-        log.error("评论数据获取undefined");
+      let pageCommentInfo = await TiebaComment.getPageComment(pageUrl);
+      if (!pageCommentInfo.success) {
+        loadingView.setHTML(
+          `<a href="${pageCommentInfo.data}">触发百度安全校验，点击前往验证</a>`
+        );
         return;
       }
-      if (!pageDOM || typeof pageDOM === "string" || !pageCommentList.commentList) {
-        loadingView.setText(
-          typeof pageDOM === "string" ? pageDOM : "获取评论失败"
-        );
+      let pageDOM = pageCommentInfo.data;
+      let pageCommentList = await TiebaComment.getPageCommentList(url);
+      if (pageCommentList == null || pageCommentList.commentList && !pageCommentList.commentList) {
+        loadingView.setText("评论数据获取失败");
         log.error("评论数据获取失败");
         return;
       }
@@ -10727,6 +10812,7 @@ div[class^="new-summary-container_"] {\r
         document.querySelectorAll(".post-item").forEach((ele) => ele.remove());
         comments.shift();
         TiebaComment.floor_num = 1;
+        console.log(comments);
         comments.forEach((element) => {
           TiebaComment.insertNewCommentInnerElement(
             TiebaComment.getNewCommentInnerElement(element, pageCommentList)
@@ -10751,20 +10837,28 @@ div[class^="new-summary-container_"] {\r
       TiebaComment.param_forum_id = TiebaPageDataApi.getForumId();
       if (!TiebaComment.param_forum_id) {
         let recommendItemElement = await utils.waitNode(
-          ".recommend-item"
+          ".recommend-item",
+          5e3
         );
-        await utils.waitPropertyByInterval(
-          recommendItemElement,
-          () => {
-            return recommendItemElement.hasAttribute("data-banner-info");
-          },
-          250,
-          1e4
-        );
-        TiebaComment.param_forum_id = TiebaPageDataApi.getForumId();
-      }
-      if (!TiebaComment.param_forum_id) {
-        return log.error("贴吧：获取参数data-banner-info失败");
+        if (recommendItemElement) {
+          await utils.waitPropertyByInterval(
+            recommendItemElement,
+            () => {
+              return recommendItemElement.hasAttribute("data-banner-info");
+            },
+            250,
+            1e4
+          );
+          TiebaComment.param_forum_id = TiebaPageDataApi.getForumId();
+          if (!TiebaComment.param_forum_id) {
+            log.error("贴吧：获取参数data-banner-info失败");
+            return;
+          }
+        } else {
+          log.error("获取元素.recommend-item失败");
+          Qmsg.error("获取元素.recommend-item失败");
+          return;
+        }
       }
       let timeStamp = Date.now();
       TiebaComment.page = 1;
@@ -10776,17 +10870,21 @@ div[class^="new-summary-container_"] {\r
       let pageUrl = TiebaUrlApi.getPost(
         `${TiebaComment.param_tid}?pn=${TiebaComment.page}${TiebaComment.extraSearchSignParams}`
       );
-      let pageDOM = await TiebaComment.getPageComment(pageUrl);
-      let pageCommentList = await TiebaComment.getPageCommentList(url);
-      if (pageCommentList == null) {
-        loadingView.setText("获取评论失败");
-        log.error("评论数据获取为undefined");
+      let pageCommentInfo = await TiebaComment.getPageComment(pageUrl);
+      if (!pageCommentInfo.success) {
+        loadingView.setHTML(
+          `<a href="${pageCommentInfo.data}">触发百度安全校验，点击前往验证</a>`
+        );
         return;
       }
-      if (!pageDOM || typeof pageDOM === "string" || !pageCommentList.commentList) {
-        loadingView.setText(
-          typeof pageDOM === "string" ? pageDOM : "获取评论失败"
-        );
+      let pageDOM = pageCommentInfo.data;
+      let pageCommentList = await TiebaComment.getPageCommentList(url);
+      if (pageCommentList == null) {
+        loadingView.setText("评论数据获取为undefined");
+        log.error("评论数据获取为undefined");
+        return;
+      } else if (!pageCommentList.commentList) {
+        loadingView.setText("评论数据获取失败");
         log.error("评论数据获取失败");
         return;
       }
@@ -17848,9 +17946,11 @@ div[class^="new-summary-container_"] {\r
      */
     optimizeImagePreview() {
       {
-        addStyle(_GM_getResourceText("ViewerCSS"));
+        CommonUtils.setGMResourceCSS(GM_RESOURCE_MAP.Viewer);
       }
-      function viewIMG(imgList = [], _index_ = 0) {
+      function viewIMG(imgList = [], imgIndex = 0) {
+        log.info(["当前查看图片的索引下标：" + imgIndex]);
+        log.info(["当前查看图片的列表信息：", imgList]);
         let viewerULNodeHTML = "";
         imgList.forEach((item) => {
           viewerULNodeHTML += `<li><img data-src="${item}" loading="lazy"></li>`;
@@ -17866,33 +17966,39 @@ div[class^="new-summary-container_"] {\r
             viewer.destroy();
           }
         });
-        _index_ = _index_ < 0 ? 0 : _index_;
-        viewer.view(_index_);
+        if (imgIndex < 0) {
+          imgIndex = 0;
+          log.warn("imgIndex小于0，重置为0");
+        } else if (imgIndex > imgList.length - 1) {
+          imgIndex = imgList.length - 1;
+          log.warn("imgIndex大于imgList最大下标，重置为imgList最大下标");
+        }
+        viewer.view(imgIndex);
         viewer.zoomTo(1);
         viewer.show();
+        log.success("预览图片");
       }
       domutils.on(
         document,
         "click",
         "img",
-        function(event) {
-          let clickElement = event.target;
-          let clickParentElement = clickElement.parentElement;
-          let imgSrc = clickElement.getAttribute("data-src") || clickElement.getAttribute("src");
-          if (clickParentElement.className === "viewer-canvas" || clickParentElement.hasAttribute("data-viewer-action")) {
+        (event) => {
+          let $click = event.target;
+          let $clickParent = $click.parentElement;
+          let imageUrl = $click.getAttribute("data-src") || $click.getAttribute("src");
+          if ($clickParent.className === "viewer-canvas" || $clickParent.hasAttribute("data-viewer-action")) {
+            log.info("点击的<img>属于Viewer内的元素， 不处理");
             return;
           }
-          if (imgSrc == null ? void 0 : imgSrc.match(/^http(s|):\/\/(tiebapic|imgsa).baidu.com\/forum/g)) {
+          if (imageUrl == null ? void 0 : imageUrl.match(/^http(s|):\/\/(tiebapic|imgsa).baidu.com\/forum/g)) {
             utils.preventEvent(event);
             log.info(`点击图片👇`);
-            log.info(clickElement);
-            if (clickParentElement.className === "img-box") {
-              let parentMain = clickElement.closest(
-                ".img-sudoku.main-img-sudoku"
-              );
+            log.info($click);
+            if ($clickParent.className === "img-box") {
+              let parentMain = $click.closest(".img-sudoku.main-img-sudoku");
               log.info(parentMain);
               if (!parentMain) {
-                viewIMG([imgSrc]);
+                viewIMG([imageUrl]);
                 return;
               }
               utils.preventEvent(event);
@@ -17924,11 +18030,11 @@ div[class^="new-summary-container_"] {\r
               }
               log.info("图片列表👇");
               log.info(lazyImgList);
-              viewIMG(lazyImgList, lazyImgList.indexOf(imgSrc));
-            } else if (clickParentElement.className === "text-content") {
+              viewIMG(lazyImgList, lazyImgList.indexOf(imageUrl));
+            } else if ($clickParent.className === "text-content") {
               let lazyImgList = [];
-              log.info(clickParentElement);
-              clickParentElement.querySelectorAll("img.BDE_Image").forEach((item) => {
+              log.info($clickParent);
+              $clickParent.querySelectorAll("img.BDE_Image").forEach((item) => {
                 let _imgSrc_ = item.getAttribute("data-src") || item.src;
                 log.info(`获取图片: ${_imgSrc_}`);
                 let imgUrlInfo = new URL(_imgSrc_);
@@ -17947,11 +18053,14 @@ div[class^="new-summary-container_"] {\r
               });
               log.info("评论区图片列表👇");
               log.info(lazyImgList);
-              viewIMG(lazyImgList, lazyImgList.indexOf(imgSrc));
+              viewIMG(lazyImgList, lazyImgList.indexOf(imageUrl));
             } else {
-              viewIMG([imgSrc]);
+              viewIMG([imageUrl]);
             }
           }
+        },
+        {
+          capture: true
         }
       );
       CommonUtils.addBlockCSS(
@@ -18030,7 +18139,7 @@ div[class^="new-summary-container_"] {\r
      */
     repairErrorThread() {
       async function getPageInfo() {
-        var _a3;
+        var _a3, _b;
         let getResp = await httpx.get(window.location.href, {
           headers: {
             "User-Agent": utils.getRandomPCUA()
@@ -18082,14 +18191,18 @@ div[class^="new-summary-container_"] {\r
         }
         let time = ((_a3 = pageDOM.querySelector(
           "#j_p_postlist .post-tail-wrap span.tail-info:nth-child(6)"
-        )) == null ? void 0 : _a3.innerText) || "";
+        )) == null ? void 0 : _a3.innerText) || ((_b = field == null ? void 0 : field.content) == null ? void 0 : _b.date) || "";
         if (utils.isNotNull(time)) {
           time = utils.formatToTimeStamp(time) / 1e3;
         }
+        let content = pageDOM.querySelector(
+          '.d_post_content_firstfloor .d_post_content[id^="post_content_"]'
+        );
         return {
           field,
           PageData,
-          time
+          time,
+          content: content == null ? void 0 : content.innerHTML
         };
       }
       function getPostList(field, PageData, time) {
@@ -18195,16 +18308,16 @@ div[class^="new-summary-container_"] {\r
           /* PageData.forum.avatar */
           avatar: pageInfo.PageData.forum.avatar,
           /* PageData.forum.first_class */
-          first_dir: pageInfo.PageData.forum.first_class,
+          first_dir: pageInfo.PageData.forum.first_class || pageInfo.PageData.first_class,
           /* PageData.forum.id */
-          id: pageInfo.PageData.forum.id,
+          id: pageInfo.PageData.forum.id || pageInfo.PageData.forum.forum_id || pageInfo.PageData.forum.true_forum_id,
           is_exists: 1,
           is_forbidden: 0,
           is_forum_merged: 0,
           /* PageData.forum.name */
-          name: pageInfo.PageData.forum.name,
+          name: pageInfo.PageData.forum.name || pageInfo.PageData.forum.forum_name,
           /* PageData.forum.second_class */
-          second_dir: pageInfo.PageData.forum.second_class
+          second_dir: pageInfo.PageData.forum.second_class || pageInfo.PageData.second_class
         };
         appViewVue.postNum = 100;
         appViewVue.isErrorThread = false;
@@ -18214,7 +18327,7 @@ div[class^="new-summary-container_"] {\r
             document.querySelector(
               "div.app-view div.thread-main-wrapper .thread-text"
             ),
-            postList[0].content[0].text
+            postList[0].content[0].text || pageInfo.content
           );
           if (appViewVue.interactionNum && typeof ((_b = (_a3 = pageInfo == null ? void 0 : pageInfo.PageData) == null ? void 0 : _a3.thread) == null ? void 0 : _b.reply_num) === "number") {
             appViewVue.interactionNum.reply = pageInfo.PageData.thread.reply_num;
@@ -20700,7 +20813,7 @@ div[class^="new-summary-container_"] {\r
 						.pops-drawer-title{
 							background: url(https://api.chongss.com/pc.php?category=landscape);
 							// background-size: cover;
-							background-size: 100%;
+							background-size: 100% 100%;
 							background-position: center;
 							background-repeat: no-repeat;
 						}
