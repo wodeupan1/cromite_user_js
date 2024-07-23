@@ -2210,6 +2210,7 @@ $("div[ad-dom-img]").remove();
 
     if(zkdurldomain.indexOf('jingyan.baidu.com/search') > 0){
         $(".ec_ad").parent().remove();
+        $("a[class='gogoxvideo']").remove();
     }
     if(zkdurldomain.indexOf('jingyan.baidu.com/article') > 0){
         $("#fresh-share-exp-e").remove();
