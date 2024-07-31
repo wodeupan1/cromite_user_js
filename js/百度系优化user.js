@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【移动端】百度系优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2024.7.28.22
+// @version      2024.7.31
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @license      GPL-3.0-only
@@ -903,6 +903,7 @@ match-attr##srcid##sp_purc_atom
           {
             text: "百度健康",
             type: "deepMenu",
+            headerTitle: "百度健康（/bh）",
             forms: [
               {
                 text: "百度健康(快速问医生)",
@@ -2387,16 +2388,6 @@ match-attr##srcid##sp_purc_atom
       }
     ]
   };
-  const PanelJingYanSettingUI = {
-    id: "baidu-panel-config-jingyan",
-    title: "经验",
-    headerTitle: "百度经验<br />jingyan.baidu.com",
-    isDefault() {
-      return BaiduRouter.isJingYan();
-    },
-    scrollToDefaultView: true,
-    forms: []
-  };
   const PanelBaiKeSettingUI = {
     id: "baidu-panel-config-baike",
     title: "百科",
@@ -2621,16 +2612,6 @@ match-attr##srcid##sp_purc_atom
       }
     ]
   };
-  const PanelImageSettingUI = {
-    id: "baidu-panel-config-image",
-    title: "图片",
-    headerTitle: "百度经验<br />image.baidu.com",
-    isDefault() {
-      return BaiduRouter.isJingYan();
-    },
-    scrollToDefaultView: true,
-    forms: []
-  };
   const PanelMapSettingUI = {
     id: "baidu-panel-config-map",
     title: "地图",
@@ -2655,16 +2636,6 @@ match-attr##srcid##sp_purc_atom
       }
     ]
   };
-  const PanelXueSettingUI = {
-    id: "baidu-panel-config-xue",
-    title: "知了好学",
-    headerTitle: "知了好学<br />xue.baidu.com",
-    isDefault() {
-      return BaiduRouter.isJingYan();
-    },
-    scrollToDefaultView: true,
-    forms: []
-  };
   const PanelAiQiChaSettingUI = {
     id: "baidu-panel-config-aiqicha",
     title: "爱企查",
@@ -2687,16 +2658,6 @@ match-attr##srcid##sp_purc_atom
         ]
       }
     ]
-  };
-  const PanelPosSettingUI = {
-    id: "baidu-panel-config-pos",
-    title: "网盟",
-    headerTitle: "百度网盟推广<br />pos.baidu.com",
-    isDefault() {
-      return BaiduRouter.isPos();
-    },
-    scrollToDefaultView: true,
-    forms: []
   };
   const PanelHaoKanSettingUI = {
     id: "baidu-panel-config-haokan",
@@ -2794,16 +2755,6 @@ match-attr##srcid##sp_purc_atom
         ]
       }
     ]
-  };
-  const PanelPanSettingUI = {
-    id: "baidu-panel-config-pan",
-    title: "网盘",
-    headerTitle: "百度网盘<br />pan.baidu.com",
-    isDefault() {
-      return BaiduRouter.isPan();
-    },
-    scrollToDefaultView: true,
-    forms: []
   };
   const PanelYiYanSettingUI = {
     id: "baidu-panel-config-yiyan",
@@ -4231,18 +4182,18 @@ match-attr##srcid##sp_purc_atom
         PanelBaiJiaHaoSettingUI,
         PanelTieBaSettingUI,
         PanelWenKuSettingUI,
-        PanelJingYanSettingUI,
+        // PanelJingYanSettingUI,
         PanelBaiKeSettingUI,
         PanelZhiDaoSettingUI,
         PanelFanYiSettingUI,
-        PanelImageSettingUI,
+        // PanelImageSettingUI,
         PanelMapSettingUI,
-        PanelXueSettingUI,
+        // PanelXueSettingUI,
         PanelAiQiChaSettingUI,
-        PanelPosSettingUI,
+        // PanelPosSettingUI,
         PanelHaoKanSettingUI,
         PanelGraphSettingUI,
-        PanelPanSettingUI,
+        // PanelPanSettingUI,
         PanelYiYanSettingUI,
         PanelChatSettingUI,
         PanelEasyLearnSettingUI,
@@ -4730,10 +4681,10 @@ div[class^="new-summary-container_"] {\r
       addStyle(SearchHealthShieldCSS);
       log.info("插入CSS规则");
       PopsPanel.execMenuOnce("baidu_search_headlth_shield_other_info", () => {
-        this.shieldOtherInfo();
+        return this.shieldOtherInfo();
       });
       PopsPanel.execMenuOnce("baidu_search_headlth_shield_bottom_toolbar", () => {
-        this.shieldServiceButtonsRow();
+        return this.shieldServiceButtonsRow();
       });
     },
     /**
@@ -4742,7 +4693,9 @@ div[class^="new-summary-container_"] {\r
     shieldOtherInfo() {
       log.info("【屏蔽】底部其它信息");
       return CommonUtils.addBlockCSS(
-        'article[class] > div[class^="index_container"]'
+        'article[class] > div[class^="index_container"]',
+        // 2024.7.31 https://m.baidu.com/bh/m/detail/ar_5737243699133678027
+        '#main > div[class^="index_container"]'
       );
     },
     /**
@@ -4751,7 +4704,9 @@ div[class^="new-summary-container_"] {\r
     shieldServiceButtonsRow() {
       log.info("【屏蔽】底部工具栏");
       return CommonUtils.addBlockCSS(
-        'article[class] > div[class^="index_healthServiceButtonsRow"]'
+        'article[class] > div[class^="index_healthServiceButtonsRow"]',
+        // 2024.7.31 https://m.baidu.com/bh/m/detail/ar_5737243699133678027
+        '#main > div[class^="index_interactWrap"]'
       );
     }
   };
