@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【移动端】百度系优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2024.9.8
+// @version      2024.9.8.15
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @license      GPL-3.0-only
@@ -4611,7 +4611,7 @@ match-attr##srcid##sp_purc_atom
       });
     },
     /**
-     * 将url修复，例如只有search的链接/sss/xxx?sss=xxxx
+     * 将url修复，例如只有search的链接/sss/xxx?sss=xxxx修复为https://xxx.xxx.xxx/sss/xxx?sss=xxxx
      * @param url 需要修复的链接
      */
     fixUrl(url) {
@@ -7650,7 +7650,12 @@ div[class^="new-summary-container_"] {\r
         document.querySelector(".tb-mobile-viewport .tb-forum")
       )) == null ? void 0 : _g.forum) == null ? void 0 : _h.name;
       let appView = (_j = (_i = VueUtils.getVue(document.querySelector(".app-view"))) == null ? void 0 : _i.forum) == null ? void 0 : _j.name;
-      return tbMobileViewport || mainPageWrap || tbForum || appView;
+      let $uniAppPostNavBarForumName = document.querySelector(
+        "uni-app .nav-bar .forum-name"
+      );
+      let uniAppPostNavBarForumName = ($uniAppPostNavBarForumName == null ? void 0 : $uniAppPostNavBarForumName.textContent) || "";
+      uniAppPostNavBarForumName = uniAppPostNavBarForumName.replace(/吧$/g, "");
+      return tbMobileViewport || mainPageWrap || tbForum || appView || uniAppPostNavBarForumName;
     },
     /**
      * 获取当前的贴吧的id
@@ -8083,8 +8088,11 @@ div[class^="new-summary-container_"] {\r
     },
     init() {
       let that = this;
-      utils.waitNode(".more-btn-desc").then(($oldMoreBtnDesc) => {
-        that.addCSS();
+      utils.waitNode(".more-btn-desc", 1e4).then(($oldMoreBtnDesc) => {
+        if (!$oldMoreBtnDesc) {
+          return;
+        }
+        this.addCSS();
         $oldMoreBtnDesc.outerHTML = '<div class="more-btn-desc">搜索</div>';
         let $newSearch = domutils.createElement("div", {
           id: "search",
@@ -8189,20 +8197,25 @@ div[class^="new-summary-container_"] {\r
             return;
           }
           this.$data.currentSearchText = searchText;
-          TiebaSearch.clearOldSearchResult();
-          TiebaSearch.postsPageSearch();
+          this.clearOldSearchResult();
+          this.postsPageSearch();
         };
         domutils.on(this.$ele.$searchBtn, "click", () => {
           searchEvent();
         });
-        domutils.listenKeyboard(this.$ele.$searchInput, "keypress", (keyName) => {
-          if (keyName !== "Enter") {
-            return;
+        domutils.listenKeyboard(
+          this.$ele.$searchInput,
+          "keypress",
+          (keyName) => {
+            if (keyName !== "Enter") {
+              return;
+            }
+            searchEvent();
           }
-          searchEvent();
-        });
+        );
         domutils.on(this.$ele.$navSearchBack, "click", () => {
-          TiebaSearch.quitSearchMode();
+          this.quitSearchMode();
+          this.removeScrollEvent();
         });
         domutils.on(this.$ele.$select, "change", (event) => {
           let select = event.target;
@@ -8335,6 +8348,8 @@ div[class^="new-summary-container_"] {\r
 			height: 0.32rem;
 			z-index: 1000;
 			background: var(--bg-color);
+			align-items: flex-start;
+    		justify-content: center;
 		}
 		.search-result-model .search-result-model-item{
 			margin-right: 20px;
@@ -8526,6 +8541,7 @@ div[class^="new-summary-container_"] {\r
       domutils.hide("#vite-app");
       domutils.hide(".main-page-wrap");
       domutils.hide(".tb-mobile-viewport");
+      domutils.hide("#app:has(uni-app)");
       this.showSearchContainer();
       setTimeout(() => {
         this.$ele.$searchInput.focus();
@@ -8545,6 +8561,7 @@ div[class^="new-summary-container_"] {\r
       domutils.show("#vite-app");
       domutils.show(".main-page-wrap");
       domutils.show(".tb-mobile-viewport");
+      domutils.show("#app:has(uni-app)");
     },
     /**
      * 获取搜索内容
@@ -8697,7 +8714,11 @@ div[class^="new-summary-container_"] {\r
       splitText.forEach((text) => {
         data["title"] = data["title"].replaceAll(text, "<em>" + text + "</em>");
       });
-      let resultElement = domutils.createElement("div", {
+      let postUrlObj = new URL(CommonUtils.fixUrl(data["url"]));
+      let postUrl = postUrlObj.origin + postUrlObj.pathname;
+      let authorHomeUrl = data["authorHomeUrl"];
+      let postForum = data["forum"];
+      let $resultElement = domutils.createElement("div", {
         className: "s_post search_result",
         innerHTML: (
           /*html*/
@@ -8725,25 +8746,26 @@ div[class^="new-summary-container_"] {\r
 		  `
         )
       });
-      let userAvatarElement = resultElement.querySelector(
+      $resultElement.setAttribute("data-url", data["url"]);
+      let $userAvatarElement = $resultElement.querySelector(
         ".search-result-media-left img"
       );
-      let userNameElement = resultElement.querySelector(
+      let $userNameElement = $resultElement.querySelector(
         ".search-result-media-body-author-name"
       );
-      let mediaElement = resultElement.querySelector(
+      let $mediaElement = $resultElement.querySelector(
         ".search-result-media"
       );
-      let titleElement = resultElement.querySelector(
+      let $titleElement = $resultElement.querySelector(
         ".search-result-title"
       );
-      let contentElement = resultElement.querySelector(
+      let $contentElement = $resultElement.querySelector(
         ".search-result-content"
       );
-      let contentSpanElement = resultElement.querySelector(
+      let $contentSpanElement = $resultElement.querySelector(
         ".search-result-content-span"
       );
-      let bottomToolBarElement = resultElement.querySelector(
+      let $bottomToolBarElement = $resultElement.querySelector(
         ".search-result-bottom-toolbar"
       );
       if (PopsPanel.getValue("baidu_tieba_search_opt_user_info")) {
@@ -8753,21 +8775,21 @@ div[class^="new-summary-container_"] {\r
           if (!userHomeInfo) {
             return;
           }
-          userAvatarElement.src = TiebaUrlApi.getUserAvatar(
+          $userAvatarElement.src = TiebaUrlApi.getUserAvatar(
             userHomeInfo["portrait"]
           );
-          userNameElement.innerText = userHomeInfo["show_nickname"];
+          $userNameElement.innerText = userHomeInfo["show_nickname"];
         });
       }
-      let eleList = [
-        { element: mediaElement, url: data["authorHomeUrl"] },
-        { element: [titleElement, contentElement], url: data["url"] },
+      let nodeAnchorIterator = [
+        { element: $mediaElement, url: authorHomeUrl },
+        { element: [$titleElement, $contentElement], url: postUrl },
         {
-          element: bottomToolBarElement,
-          url: `https://tieba.baidu.com/f?kw=${data["forum"]}`
+          element: $bottomToolBarElement,
+          url: TiebaUrlApi.getForum(postForum)
         }
       ];
-      eleList.forEach((item) => {
+      nodeAnchorIterator.forEach((item) => {
         domutils.on(
           item.element,
           "click",
@@ -8780,7 +8802,7 @@ div[class^="new-summary-container_"] {\r
           }
         );
       });
-      resultElement.querySelectorAll(
+      $resultElement.querySelectorAll(
         ".search-result-content img.BDE_Image"
       ).forEach(($BDE_Image) => {
         let originalImageIndex = data["media"].findIndex(
@@ -8797,17 +8819,17 @@ div[class^="new-summary-container_"] {\r
       let imageContainerElement = domutils.createElement("div", {
         className: "BDE_Image_container"
       });
-      data["media"].forEach((mediaSrc) => {
+      data["media"].forEach((mediaUrl) => {
         domutils.append(
           imageContainerElement,
           domutils.createElement("img", {
             className: "BDE_Image",
-            src: mediaSrc
+            src: mediaUrl
           })
         );
       });
-      contentSpanElement.appendChild(imageContainerElement);
-      resultElement.querySelectorAll(
+      $contentSpanElement.appendChild(imageContainerElement);
+      $resultElement.querySelectorAll(
         ".search-result-content img.BDE_Smiley"
       ).forEach(($BDE_Smiley) => {
         if (!$BDE_Smiley.src.startsWith("http://static.tieba.baidu.com")) {
@@ -8816,7 +8838,7 @@ div[class^="new-summary-container_"] {\r
         let imagePathName = new URL($BDE_Smiley.src).pathname;
         $BDE_Smiley.src = TiebaUrlApi.getImageSmiley(imagePathName);
       });
-      return resultElement;
+      return $resultElement;
     },
     /**
      * 添加滚动事件
@@ -11968,6 +11990,7 @@ div[class^="new-summary-container_"] {\r
               this.optimizationLzlPostBackGestureReturn();
             }
           );
+          this.repairSearch();
         });
       });
     },
@@ -12300,6 +12323,77 @@ div[class^="new-summary-container_"] {\r
           return;
         }
         removePopStateEvent();
+      });
+    },
+    /**
+     * 修复搜索功能
+     */
+    repairSearch() {
+      utils.waitNode(".nav-bar .nav-bar-forum-info", 1e4).then(($navBarForumInfo) => {
+        if (!$navBarForumInfo) {
+          return;
+        }
+        let $navBar = $navBarForumInfo.closest(".nav-bar");
+        let $moreBtnDesc = domutils.createElement("div", {
+          className: "more-btn-desc",
+          innerText: "搜索"
+        });
+        $navBar.appendChild($moreBtnDesc);
+        addStyle(
+          /*css*/
+          `
+				.nav-bar .more-btn-desc{
+					font-size: 15px;
+				}
+				#search .nav-bar-wrapper{
+					height: 48px;
+				}
+				#search .nav-bar-wrapper svg{
+					width: 16px;
+					height: 16px;
+				}
+				#search .nav-search-btn{
+					font-size: 15px;
+				}
+				#search .search-result{
+					top: 48px;
+				}
+				#search .search-result-model{
+					top: 48px;
+					height: 32px;
+				}
+				#search .search-result-model .search-result-model-item[data-active]:after{
+					width: 20px;
+    				margin: 0 5px 0px;
+				}
+				#search .search-result-from-info{
+					margin-top: 32px;
+				}
+				#search .search-result-media-left{
+					padding-right: 8px !important;
+				}
+				#search .search-result-media-left img{
+					width: 35px !important;;
+    				height: 35px !important;;
+				}
+				#search .search-result-media-body-author-name{
+					margin-top: 2px !important;
+					font-size: 16px !important;
+					line-height: 15px !important;
+				}
+				#search .search-result-media-body-time{
+					margin-top: 6px !important;
+					font-size: 12px !important;
+					line-height: 12px !important;
+				}
+				#search .search-result-title, #search .search-result-content, #search .search-result-bottom-toolbar{
+					margin-top: 8px !important;
+				}
+				#search h1.search-result-title-h1{
+					font-size: 16px !important;
+				}
+				`
+        );
       });
     }
   };
