@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【移动端】百度系优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2024.9.10
+// @version      2024.9.11
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @license      GPL-3.0-only
@@ -23,7 +23,7 @@
 // @require      https://fastly.jsdelivr.net/npm/@whitesev/utils@2.2.6/dist/index.umd.js
 // @require      https://fastly.jsdelivr.net/npm/@whitesev/domutils@1.3.2/dist/index.umd.js
 // @require      https://fastly.jsdelivr.net/npm/viewerjs@1.11.6/dist/viewer.min.js
-// @require      https://fastly.jsdelivr.net/npm/@whitesev/pops@1.5.4/dist/index.umd.js
+// @require      https://fastly.jsdelivr.net/npm/@whitesev/pops@1.5.5/dist/index.umd.js
 // @resource     ElementPlusResourceCSS  https://fastly.jsdelivr.net/npm/element-plus@2.7.7/dist/index.min.css
 // @resource     ViewerCSS               https://fastly.jsdelivr.net/npm/viewerjs@1.11.6/dist/viewer.min.css
 // @connect      *
@@ -158,7 +158,7 @@
     isTieBa() {
       return Boolean(
         window.location.href.match(
-          /^http(s|):\/\/(tieba|ala|static.tieba|nba|fexclick).baidu.com/g
+          /^http(s|):\/\/(tieba|ala|static.tieba|nba|fexclick|youhua).baidu.com/g
         ) || window.location.href.match(/^http(s|):\/\/(www.tieba|jump2.bdimg).com/g)
       );
     },
@@ -184,6 +184,14 @@
     isTieBaHybrid() {
       return Boolean(
         this.isTieBa() && window.location.pathname.startsWith("/mo/q/hybrid")
+      );
+    },
+    /**
+     * 贴吧 - 中转链接验证页面
+     */
+    isTieBaCheckUrl() {
+      return Boolean(
+        this.isTieBa() && window.location.pathname.startsWith("/mo/q/checkurl")
       );
     },
     /**
@@ -1830,6 +1838,12 @@ match-attr##srcid##sp_purc_atom
       return `https://tieba.baidu.com/home/main?id=${tb}`;
     },
     /**
+     * 根据(un|userName)获取用户主页地址
+     */
+    getUserHomeByUN(un) {
+      return `https://tieba.baidu.com/home/main?un=${un}`;
+    },
+    /**
      * 根据tid/pid获取帖子链接
      * @param id
      */
@@ -2205,6 +2219,13 @@ match-attr##srcid##sp_purc_atom
                     true,
                     void 0,
                     "屏蔽【贴吧包打听】机器人，回答的评论都是牛头不对马嘴的"
+                  ),
+                  UISwitch(
+                    "修复超链接跳转",
+                    "baidu-tieba-uni-app-post-repairAnchorLink",
+                    true,
+                    void 0,
+                    "可修复蓝色的超链接点击不能跳转网页的问题"
                   )
                 ]
               }
@@ -2349,6 +2370,13 @@ match-attr##srcid##sp_purc_atom
                     false,
                     void 0,
                     "域名为nba.baidu.com、static.tieba.baidu.com...等时自动重定向至tieba.baidu.com"
+                  ),
+                  UISwitch(
+                    "自动跳转链接",
+                    "baidu-tieba-checkUrl-autoJumpUrl",
+                    true,
+                    void 0,
+                    "在链接验证页面自动跳转链接"
                   )
                 ]
               }
@@ -12027,6 +12055,7 @@ div[class^="new-summary-container_"] {\r
 			}
 			`
         );
+        this.mutationRemoveWakeUpBtn();
         PopsPanel.execMenuOnce(
           "baidu-tieba-uni-app-post-overloadLoadMore",
           () => {
@@ -12063,6 +12092,12 @@ div[class^="new-summary-container_"] {\r
             return !!value;
           }
         );
+        PopsPanel.execMenuOnce(
+          "baidu-tieba-uni-app-post-repairAnchorLink",
+          () => {
+            this.repairAnchorLink();
+          }
+        );
         domutils.ready(() => {
           PopsPanel.execMenuOnce(
             "baidu-tieba-uni-app-post-rememberChooseSeeCommentSort",
@@ -12097,6 +12132,21 @@ div[class^="new-summary-container_"] {\r
      */
     isUniApp() {
       return Boolean(document.querySelector("uni-app"));
+    },
+    /**
+     * 动态加载移除唤醒按钮，会影响页面点击，比如超链接点击无反应
+     */
+    mutationRemoveWakeUpBtn() {
+      utils.mutationObserver(document.documentElement, {
+        config: {
+          subtree: true,
+          childList: true
+        },
+        immediate: true,
+        callback() {
+          document.querySelectorAll(".wake-app-btn").forEach(($ele) => $ele.remove());
+        }
+      });
     },
     /**
      * 覆盖页面的加载更多按钮，可实现加载更多评论
@@ -12313,10 +12363,8 @@ div[class^="new-summary-container_"] {\r
                 (entries, observer) => {
                   observer.disconnect();
                   setTimeout(() => {
-                    utils.waitNode(".pb-comment-item-container").then(() => {
-                      $item.click();
-                    });
-                  }, 150);
+                    $item.click();
+                  }, 1250);
                 },
                 {
                   rootMargin: "-10px 0px 0px 0px"
@@ -12508,6 +12556,50 @@ div[class^="new-summary-container_"] {\r
 				`
         );
       });
+    },
+    /**
+     * 修复超链接跳转
+     */
+    repairAnchorLink() {
+      domutils.on(
+        document,
+        "click",
+        (event) => {
+          var _a3, _b, _c, _d, _e, _f;
+          let $click = event.composedPath()[0];
+          if ($click.nodeType === Node.ELEMENT_NODE && $click.classList) {
+            if ($click.classList.contains("pb-link")) {
+              utils.preventEvent(event);
+              let vueIns = VueUtils.getVue3($click);
+              let link = (_b = (_a3 = vueIns == null ? void 0 : vueIns.props) == null ? void 0 : _a3.content) == null ? void 0 : _b.link;
+              if (typeof link === "string") {
+                log.info(`点击超链接：` + link);
+                window.open(link, "_blank");
+              } else {
+                log.error("获取链接失败");
+                log.error([$click, vueIns]);
+                Qmsg.error("获取链接失败");
+              }
+            } else if ($click.classList.contains("pb-at")) {
+              utils.preventEvent(event);
+              let vueIns = VueUtils.getVue3($click);
+              let un = (_d = (_c = vueIns == null ? void 0 : vueIns.props) == null ? void 0 : _c.content) == null ? void 0 : _d.text;
+              (_f = (_e = vueIns == null ? void 0 : vueIns.props) == null ? void 0 : _e.content) == null ? void 0 : _f.type;
+              if (un == null) {
+                log.error("获取用户un失败");
+                Qmsg.error("获取用户un失败");
+                return;
+              }
+              un = un.replace("@", "");
+              let userHomeUrl = TiebaUrlApi.getUserHomeByUN(un);
+              window.open(userHomeUrl, "_blank");
+            }
+          }
+        },
+        {
+          capture: true
+        }
+      );
     }
   };
   const TiebaReply = {
@@ -22285,6 +22377,27 @@ div[class^="new-summary-container_"] {\r
       addStyle(AppCSS);
     }
   };
+  const TiebaCheckUrl = {
+    init() {
+      PopsPanel.execMenu("baidu-tieba-checkUrl-autoJumpUrl", () => {
+        this.autoJumpUrl();
+      });
+    },
+    /**
+     * 跳转链接
+     */
+    autoJumpUrl() {
+      log.info(`跳转链接`);
+      let url = new URLSearchParams(globalThis.location.search).get("url");
+      if (typeof url === "string") {
+        log.success(`跳转链接：` + url);
+        globalThis.location.href = url;
+      } else {
+        log.error(`解析当前的跳转链接失败`);
+        Qmsg.error("解析当前的跳转链接失败");
+      }
+    }
+  };
   const BaiduTieBa = {
     init() {
       addStyle(TieBaShieldCSS);
@@ -22345,6 +22458,10 @@ div[class^="new-summary-container_"] {\r
       } else if (BaiduRouter.isTieBaHome()) {
         log.success("Router: 用户主页");
         TiebaHome.init();
+        return;
+      } else if (BaiduRouter.isTieBaCheckUrl()) {
+        log.success(`Router: 验证链接中间页`);
+        TiebaCheckUrl.init();
         return;
       } else {
         log.error("Router: 未知");
@@ -22557,7 +22674,7 @@ div[class^="new-summary-container_"] {\r
 							--user-info-font-color: #ffffff;
 						}
 						.pops-drawer-title{
-							background: url(https://api.chongss.com/pc.php?category=landscape);
+							background: url(https://api.chongss.com/pc.php?category=bing);
 							// background-size: cover;
 							background-size: 100% 100%;
 							background-position: center;
