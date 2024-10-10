@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【移动端】百度系优化
 // @namespace    https://github.com/WhiteSevs/TamperMonkeyScript
-// @version      2024.10.8
+// @version      2024.10.10
 // @author       WhiteSevs
 // @description  用于【移动端】的百度系列产品优化，包括【百度搜索】、【百家号】、【百度贴吧】、【百度文库】、【百度经验】、【百度百科】、【百度知道】、【百度翻译】、【百度图片】、【百度地图】、【百度好看视频】、【百度爱企查】、【百度问题】、【百度识图】等
 // @license      GPL-3.0-only
@@ -2392,6 +2392,19 @@ match-attr##srcid##sp_purc_atom
                   )
                 ]
               }
+              // {
+              // 	type: "forms",
+              // 	text: "网络请求拦截",
+              // 	forms: [
+              // 		UISwitch(
+              // 			"/mo/q/getUpConfigData",
+              // 			"baidu-tieba-uni-app-post-intercept-getUpConfigData",
+              // 			true,
+              // 			void 0,
+              // 			"该请求类似于广告配置，建议拦截"
+              // 		),
+              // 	],
+              // },
             ]
           }
         ]
@@ -12129,20 +12142,7 @@ div[class^="new-summary-container_"] {\r
           log.warn("检测到hash值为手势优化的hash值，已自动去除");
           window.location.hash = "";
         }
-        addStyle(
-          /*css*/
-          `
-			/* 加载评论失败的弹窗 */
-			.swiper-content .tb-error-page{
-				background: rgba(0, 0, 0, 0.7);
-				color: #ffffff;
-				z-index: 10000;
-			}
-			.swiper-content .tb-error-page .error-icon{
-				margin: 0;
-			}
-			`
-        );
+        this.repairTbErrorPage();
         this.mutationRemoveWakeUpBtn();
         PopsPanel.execMenuOnce(
           "baidu-tieba-uni-app-post-allow-user-select",
@@ -12244,6 +12244,22 @@ div[class^="new-summary-container_"] {\r
 			-webkit-user-select: unset !important;
 			-moz-user-select: unset !important;
 			user-select: unset !important;
+		}
+		`
+      );
+    },
+    /**
+     * 修复贴吧请求失败的弹窗（点击无反应）
+     */
+    repairTbErrorPage() {
+      addStyle(
+        /*css*/
+        `
+		/* 加载评论失败的弹窗 */
+		.swiper-content .tb-error-page{
+			background: rgba(0, 0, 0, 0.7);
+			color: #ffffff;
+			z-index: 10000;
 		}
 		`
       );
