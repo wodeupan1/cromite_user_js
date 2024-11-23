@@ -1,7 +1,17 @@
 // ==UserScript==
 // @name         俺的手机视频脚本
 // @description  全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
-// @version      1.8.0
+// @name:zh-TW          俺的手机视频脚本
+// @description:zh-TW   全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
+// @name:en             My  Phone Video Script
+// @description:en      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
+// @name:ja             My  Phone Video Script
+// @description:ja      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
+// @name:ko             My  Phone Video Script
+// @description:ko      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
+// @name:ru             My  Phone Video Script
+// @description:ru      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
+// @version      1.8.1
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -92,6 +102,8 @@
     GM_registerMenuCommand("显示/隐藏【播放速度调整按钮】", () => {
         let speed = GM_getValue("speed");
         GM_setValue("speed", !speed);
+        alert("修改成功，页面将刷新。");
+        window.location.reload();
     });
 
     function listen() {
