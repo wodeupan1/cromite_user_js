@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         俺的手机视频脚本
 // @description  全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
-// @version      1.7.0
+// @version      1.8.0
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -18,6 +18,13 @@
     'use strict';
     if (navigator.userAgent.search("Android") < 0) {
         //return;
+    }
+    //去除未使用框架的视频的原生全屏按钮
+    let videos = document.getElementsByTagName("video");
+    for (let video of videos) {
+        if (video.controls) {
+            video.controlsList = ["nofullscreen"];
+        }
     }
     //放开iframe全屏
     let iframes = document.getElementsByTagName("iframe");
@@ -79,6 +86,13 @@
             }
         }
     });
+    if (GM_getValue("speed") == null) {
+        GM_setValue("speed", true);
+    }
+    GM_registerMenuCommand("显示/隐藏【播放速度调整按钮】", () => {
+        let speed = GM_getValue("speed");
+        GM_setValue("speed", !speed);
+    });
 
     function listen() {
         if (listenTarget.tagName/*监听的是元素*/) {
@@ -127,6 +141,7 @@
             let maybeTiktok = false;
             //用于短视频判断
             let scrollHeightOut = false;
+            //寻找biggestContainer
             while (true) {
                 temp = temp.parentElement;
                 if (!temp/*或直接点击到html元素，他将没有父元素*/) {
@@ -171,6 +186,7 @@
                     break;
                 }
             }
+            //寻找视频元素
             //当触摸的不是视频元素，可能是非视频相关组件，或视频的操控层
             if (target.tagName !== "VIDEO") {
                 //尝试获取视频元素
@@ -189,9 +205,7 @@
                     }
                     //如果是视频外很大的容器绝非我们想要的
                     //操作层除了短视频没见过高度高视频这么多的，大概率不是视频操控层
-                    let _videoWidth = videoElement.clientWidth;
-                    let _videoHeight = videoElement.clientHeight;
-                    if (!maybeTiktok && targetHeight > _videoHeight * 1.5) {
+                    if (!maybeTiktok && targetHeight > videoElement.clientHeight * 1.5) {
                         //不是合适的操作层
                         return;
                     }
@@ -251,6 +265,8 @@
                     target.setAttribute("disable_contextmenu", true);
                 }
             }
+            let sharedCSS = "border-radius:4px;z-index:99999;opacity:0.5;background-color:black;color:white;" +
+                "display:flex;justify-content:center;align-items:center;text-align:center;user-select:none;";
             let haveControls = videoElement.controls;
             let longPress = false;
             //长按倍速定时器
@@ -261,39 +277,108 @@
                 target.removeEventListener("touchmove", touchmoveHandler);
                 //显示notice
                 notice.innerText = "x4";
-                notice.style.display = "block";
+                notice.style.display = "flex";
                 longPress = true;
                 rateTimer = null;
+                //显示调速按钮
+                //仅在全屏时触发
+                if (!document.fullscreenElement || videoElement.readyState === 0 || !GM_getValue("speed")) {
+                    return;
+                }
+                let speedBtns = componentContainer.getElementsByClassName("me-speed-btn");
+                let speedBtn;
+                if (speedBtns.length > 0) {
+                    speedBtn = speedBtns[0];
+                    speedBtn.style.display = "flex";
+                } else {
+                    speedBtn = document.createElement("div");
+                    speedBtn.className = "me-speed-btn";
+                    speedBtn.style.cssText = sharedCSS + "position:absolute;width:30px;height:30px;font-size:18px;";
+                    speedBtn.style.top = "50px";
+                    speedBtn.style.right = "20px";
+                    speedBtn.textContent = "速";
+                    componentContainer.appendChild(speedBtn);
+                    speedBtn.addEventListener("click", showSpeedMenu);
+                }
+                setTimeout(() => {
+                    speedBtn.style.display = "none";
+                }, 3000);
+                window.addEventListener("resize", () => {
+                    speedBtn.style.display = "none";
+                }, {once: true});
+
+                function showSpeedMenu() {
+                    speedBtn.style.display = "none";
+                    let containers = componentContainer.getElementsByClassName("me-speed-container");
+                    let container;
+                    if (containers.length > 0) {
+                        container = containers[0];
+                        container.style.display = "flex";
+                    } else {
+                        container = document.createElement("div");
+                        //在一次全屏状态中不会重复创建容器
+                        container.className = "me-speed-container";
+                        componentContainer.appendChild(container);
+                        let css;
+                        //横屏竖屏按钮显示位置不一样
+                        if (videoElement.videoHeight > videoElement.videoWidth) {
+                            css = `flex-direction:column;top:0;bottom:0;left:${(window.innerWidth * 2) / 3 + 40}px`;
+                        } else {
+                            css = `flex-direction:row;left:0;right:0;top:${(window.innerHeight / 3) - 30}px`;
+                        }
+                        container.style.cssText = "display:flex;position:absolute;flex-wrap:nowrap;z-index:99999;justify-content:center;" + css;
+                        const values = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6];
+                        //创建按钮
+                        values.forEach(value => {
+                            const button = document.createElement('div');
+                            container.appendChild(button);
+                            button.className = 'button';
+                            button.textContent = value + "";
+                            button.style.cssText = sharedCSS + "width:40px;height:30px;margin:2px;font-size:18px;";
+                            button.addEventListener('click', () => {
+                                container.style.display = "none";
+                                videoElement.playbackRate = value;
+                            });
+                        });
+                    }
+                    //触摸空白处关闭container
+                    target.addEventListener("touchstart", () => {
+                        container.style.display = "none";
+                    }, {once: true});
+                    window.addEventListener("resize", () => {
+                        container.style.display = "none";
+                    }, {once: true});
+                }
             }, 800);
             //有些网站预览视频位置实际在屏幕之外，需要加上平移的数值
             let screenWidth = screen.width;
             let componentMoveLeft = componentContainer.offsetLeft;
             let moveNum = Math.floor(componentMoveLeft * 1.1 / screenWidth);
             //添加指示器元素
-            if (componentContainer) {
+            let notices = componentContainer.getElementsByClassName("me-notice");
+            if (notices.length === 0) {
                 notice = document.createElement("div");
+                notice.className = "me-notice";
                 let noticeWidth = 110;//未带单位，后面需要加单位
-                let noticeHeight = 30;
                 let noticeTop = Math.round(componentContainer.clientHeight / 6);
                 let noticeLeft = Math.round(moveNum * screenWidth + componentContainer.clientWidth / 2 - noticeWidth / 2);
-                notice.style.cssText = "position:absolute;display:none;z-index:99999;" +
-                    "text-align:center;opacity:0.5;background-color:black;color:white;" +
-                    "font:16px/1.8 sans-serif;letter-spacing:normal;border-radius:4px;";
+                notice.style.cssText = sharedCSS + "font-size:16px;position:absolute;display:none;letter-spacing:normal;";
                 notice.style.width = noticeWidth + "px";
-                notice.style.height = noticeHeight + "px";
+                notice.style.height = "30px";
                 notice.style.left = noticeLeft + "px";
                 notice.style.top = noticeTop + "px";
                 componentContainer.appendChild(notice);
+                //每次全屏与退出全屏需要重新计算notice的位置
+                window.addEventListener("resize", () => {
+                    notice.remove();
+                }, {once: true});
             } else {
-                //怎么可能有视频没有div包着啊
-                console.log("该视频没有可以用于给快进指示器定位的祖先元素。");
+                notice = notices[0];
             }
             //滑动流畅的关键1，passive为false代表处理器内调用preventDefault()不会被浏览器拒绝
             //mdn：文档级节点 Window、Document 和 Document.body默认是true，其他节点默认是false
             target.addEventListener("touchmove", touchmoveHandler/*, {passive: false}*/);
-            target.addEventListener("touchend", () => {
-                setTimeout(touchendHandler, 0);
-            }, {once: true});
+            target.addEventListener("touchend", touchendHandler, {once: true});
 
             function makeTagAQuiet() {
                 for (let element of allParents) {
@@ -336,6 +421,7 @@
             }
 
             function touchmoveHandler(moveEvent) {
+                console.log("手指移动");
                 //触摸屏幕后，0.8s内如果有移动，清除长按定时事件
                 if (rateTimer) {
                     clearTimeout(rateTimer);
@@ -398,12 +484,14 @@
                 }
                 //未到阈值不显示
                 if (direction) {
-                    notice.style.display = "block";
+                    notice.style.display = "flex";
                     notice.innerText = (direction === 1 ? ">>>" : "<<<") + getClearTimeChange(timeChange);
                 }
             }
 
             function touchendHandler() {
+                if (notice) notice.style.display = "none";
+                // console.log("手指抬起");
                 if (GM_getValue("voiced")) {
                     videoElement.muted = false;
                 }
@@ -418,34 +506,33 @@
                 //需要替换全屏按钮，不然无法显示快进指示器
                 //非长按后手指抬起时才添加全屏按钮
                 if (!longPress && videoElement.controls && !document.fullscreenElement) {
-                    let myFullscreenBtn = document.getElementById("myFullscreenBtn");
-                    if (!myFullscreenBtn) {
-                        let btn = document.createElement("div");
-                        btn.style.cssText = "z-index:9999999;position:absolute;" +
-                            "display:block;width:50px;" +
-                            "background-color:black;color:white;opacity:0.5;" +
-                            "padding:5px 2px;font:16px/1.2 sans-serif;font-weight:bold;text-align:center;" +
-                            "box-sizing:border-box;border:2px solid white;white-space:normal;";
-                        btn.innerText = "点我全屏";
-                        btn.id = "myFullscreenBtn";
-                        let divHeight = 50;
+                    let btns = componentContainer.getElementsByClassName("me-fullscreen-btn");
+                    let btn;
+                    if (btns.length === 0) {
+                        btn = document.createElement("div");
+                        btn.style.cssText = sharedCSS + "position:absolute;width:40px;padding:2px;font-size:14px;font-weight:bold;" +
+                            "box-sizing:border-box;border:1px solid white;white-space:normal;";
+                        btn.innerText = "点我\n全屏";
+                        //设置id是为了防止多次点击重复添加
+                        btn.className = "me-fullscreen-btn";
+                        let divHeight = 40;
                         btn.style.height = divHeight + "px";
                         btn.style.top = Math.round(componentContainer.clientHeight / 2 - divHeight / 2 - 10) + "px";
                         btn.style.left = Math.round(moveNum * screenWidth + componentContainer.clientWidth * 5 / 7) + "px";
                         componentContainer.append(btn);
                         btn.addEventListener("touchstart", async function () {
-                            clean();
+                            btn.style.display = "none";
                             await componentContainer.requestFullscreen();
                         });
                         //屏蔽原生全屏按钮
                         videoElement.controlsList = ["nofullscreen"];
-                        setTimeout(clean, 2000);
-
-                        function clean() {
-                            let myFullscreenBtn = document.getElementById("myFullscreenBtn");
-                            if (myFullscreenBtn) myFullscreenBtn.remove();
-                        }
+                    } else {
+                        btn = btns[0];
+                        btn.style.display = "flex";
                     }
+                    setTimeout(() => {
+                        btn.style.display = "none";
+                    }, 2000);
                 }
                 //滑动长按判断
                 if (endX === startX) {
@@ -469,7 +556,6 @@
                     //console.log("y轴移动" + (endY - startY));
                 }
                 target.removeEventListener("touchmove", touchmoveHandler);
-                if (notice) notice.remove();
             }
         });
     }
@@ -486,7 +572,7 @@
     //使用油猴的变量监听，绕开iframe跨域限制
     if (top === window) {
         GM_setValue("doLock", false);
-        GM_addValueChangeListener("doLock", async function (key, oldValue, newValue, remote) {
+        GM_addValueChangeListener("doLock", async function (key, oldValue, newValue) {
             if (document.fullscreenElement && newValue) {
                 //恢复lock()
                 screen.orientation.lock = window.tempLock;
