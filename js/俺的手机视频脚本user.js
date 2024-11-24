@@ -1,17 +1,17 @@
 // ==UserScript==
-// @name         俺的手机视频脚本
-// @description  全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
-// @name:zh-TW          俺的手机视频脚本
-// @description:zh-TW   全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
-// @name:en             My  Phone Video Script
-// @description:en      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
-// @name:ja             My  Phone Video Script
-// @description:ja      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
-// @name:ko             My  Phone Video Script
-// @description:ko      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
-// @name:ru             My  Phone Video Script
-// @description:ru      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. 
-// @version      1.8.1
+// @name                俺的手机视频脚本
+// @name:zh-TW          俺的手機視頻腳本
+// @name:en             My Phone Video Script
+// @name:ja             My Phone Video Script
+// @name:ko             My Phone Video Script
+// @name:ru             My Phone Video Script
+// @description         全屏横屏、快进快退、长按倍速，对各种视频网站的兼容性很强。仅适用于狐猴、kiwi等chromium内核的浏览器。使用前请先关闭同类横屏或手势脚本，以避免冲突。
+// @description:zh-TW   全屏橫屏、快進快退、長按倍速，對各種視頻網站的相容性很強。僅適用於狐猴、Kiwi等Chromium核心的瀏覽器。使用前請先關閉同類橫屏或手勢腳本，以避免衝突。
+// @description:en      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
+// @description:ja      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
+// @description:ko      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
+// @description:ru      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
+// @version      1.8.2
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -81,30 +81,32 @@
     }
     //通用
     listen();
-    if (GM_getValue("voiced") == null) {
-        GM_setValue("voiced", true);
-    }
-    GM_registerMenuCommand("启用/关闭【触摸视频时取消静音】", () => {
-        let voiced = GM_getValue("voiced");
-        if (voiced) {
-            if (confirm("目前【触摸视频时取消静音】已开启，是否要关闭？")) {
-                GM_setValue("voiced", !voiced);
-            }
-        } else {
-            if (confirm("目前【触摸视频时取消静音】已关闭，是否要开启？")) {
-                GM_setValue("voiced", !voiced);
-            }
+    if (window === top) {
+        if (GM_getValue("voiced") == null) {
+            GM_setValue("voiced", true);
         }
-    });
-    if (GM_getValue("speed") == null) {
-        GM_setValue("speed", true);
+        GM_registerMenuCommand("启用/关闭【触摸视频时取消静音】", () => {
+            let voiced = GM_getValue("voiced");
+            if (voiced) {
+                if (confirm("目前【触摸视频时取消静音】已开启，是否要关闭？")) {
+                    GM_setValue("voiced", !voiced);
+                }
+            } else {
+                if (confirm("目前【触摸视频时取消静音】已关闭，是否要开启？")) {
+                    GM_setValue("voiced", !voiced);
+                }
+            }
+        });
+        if (GM_getValue("speed") == null) {
+            GM_setValue("speed", true);
+        }
+        GM_registerMenuCommand("显示/隐藏【播放速度调整按钮】", () => {
+            let speed = GM_getValue("speed");
+            GM_setValue("speed", !speed);
+            alert("修改成功，页面将刷新。");
+            window.location.reload();
+        });
     }
-    GM_registerMenuCommand("显示/隐藏【播放速度调整按钮】", () => {
-        let speed = GM_getValue("speed");
-        GM_setValue("speed", !speed);
-        alert("修改成功，页面将刷新。");
-        window.location.reload();
-    });
 
     function listen() {
         if (listenTarget.tagName/*监听的是元素*/) {
