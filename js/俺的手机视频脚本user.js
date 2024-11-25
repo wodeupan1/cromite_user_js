@@ -11,7 +11,7 @@
 // @description:ja      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
 // @description:ko      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
 // @description:ru      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
-// @version      1.8.2
+// @version      1.8.3
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -26,9 +26,6 @@
 /*jshint esversion: 8*/
 (function () {
     'use strict';
-    if (navigator.userAgent.search("Android") < 0) {
-        //return;
-    }
     //去除未使用框架的视频的原生全屏按钮
     let videos = document.getElementsByTagName("video");
     for (let video of videos) {
@@ -77,7 +74,24 @@
             }
         };
         refresh();
-        window.addEventListener("urlchange", refresh);
+        //考虑到有chrome和tampermonkey以外的用户，也适配不支持window.onurlchange的浏览器
+        if (/xmonkey|tampermonkey/i.test(GM_info.scriptHandler)) {
+            window.addEventListener("urlchange", refresh);
+        } else {
+            const originalPushState = history.pushState;
+            const originalReplaceState = history.replaceState;
+            history.pushState = function (state) {
+                originalPushState.apply(history, arguments);
+                console.log("监听到地址变化。pushState()调用。");
+                //太快的话原视频还没移除，会判断操控层已监听，不再等待新视频加载
+                setTimeout(refresh, 500);
+            };
+            history.replaceState = function (state) {
+                originalReplaceState.apply(history, arguments);
+                console.log("监听到地址变化，replaceState()调用。");
+                setTimeout(refresh, 500);
+            };
+        }
     }
     //通用
     listen();
@@ -85,27 +99,19 @@
         if (GM_getValue("voiced") == null) {
             GM_setValue("voiced", true);
         }
-        GM_registerMenuCommand("启用/关闭【触摸视频时取消静音】", () => {
-            let voiced = GM_getValue("voiced");
-            if (voiced) {
-                if (confirm("目前【触摸视频时取消静音】已开启，是否要关闭？")) {
-                    GM_setValue("voiced", !voiced);
-                }
-            } else {
-                if (confirm("目前【触摸视频时取消静音】已关闭，是否要开启？")) {
-                    GM_setValue("voiced", !voiced);
-                }
-            }
-        });
         if (GM_getValue("speed") == null) {
             GM_setValue("speed", true);
         }
-        GM_registerMenuCommand("显示/隐藏【播放速度调整按钮】", () => {
-            let speed = GM_getValue("speed");
-            GM_setValue("speed", !speed);
-            alert("修改成功，页面将刷新。");
-            window.location.reload();
-        });
+        let diyConfig = function (configName, key) {
+            GM_registerMenuCommand(configName, () => {
+                let value = GM_getValue(key);
+                GM_setValue(key, !value);
+                alert(`成功设置为${!value}，页面将刷新。`);
+                window.location.reload();
+            });
+        }
+        diyConfig("启用/关闭【触摸视频时取消静音】", "voiced");
+        diyConfig("显示/隐藏【播放速度调整按钮】", "speed");
     }
 
     function listen() {
