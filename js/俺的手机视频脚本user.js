@@ -11,7 +11,7 @@
 // @description:ja      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
 // @description:ko      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
 // @description:ru      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
-// @version      1.8.3
+// @version      1.8.4
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -26,18 +26,36 @@
 /*jshint esversion: 8*/
 (function () {
     'use strict';
-    //去除未使用框架的视频的原生全屏按钮
-    let videos = document.getElementsByTagName("video");
-    for (let video of videos) {
-        if (video.controls) {
-            video.controlsList = ["nofullscreen"];
+    let mutationTimer;
+    let mutationHandler = function () {
+        //不用判断是新增节点还是删除节点，或者是什么节点，因为都得遍历，徒增功耗
+        //去除未使用框架的视频的原生全屏按钮
+        let videos = document.getElementsByTagName("video");
+        for (let video of videos) {
+            if (video.controls) {
+                video.controlsList = ["nofullscreen"];
+                console.log("俺的手机视频脚本：获取到未使用框架的视频，已去除全屏按钮。");
+            }
+        }
+        //放开iframe全屏
+        let iframes = document.getElementsByTagName("iframe");
+        for (let iframe of iframes) {
+            iframe.allowFullscreen = true;
         }
     }
-    //放开iframe全屏
-    let iframes = document.getElementsByTagName("iframe");
-    for (let iframe of iframes) {
-        iframe.allowFullscreen = true;
-    }
+    mutationHandler();
+    //观察页面变化，为新增的视频和iframe做好相应准备
+    new MutationObserver(() => {
+        if (mutationTimer) {
+            clearTimeout(mutationTimer);
+            console.log("俺的手机视频脚本：清除定时任务。");
+        }
+        mutationTimer = setTimeout(()=>{
+            mutationTimer = 0;
+            mutationHandler();
+        }, 1000);
+        console.log("俺的手机视频脚本：观察到页面变化，1秒后处理视频和iframe。");
+    }).observe(document.body, {childList: true, subtree: true});
     //部分网站阻止视频操作层触摸事件传播，需要指定监听目标，默认是document
     //注意，对少数iframe内视频，广告插件或使此脚本不起作用
     let listenTarget = document;
@@ -441,7 +459,7 @@
             }
 
             function touchmoveHandler(moveEvent) {
-                console.log("手指移动");
+                // console.log("手指移动");
                 //触摸屏幕后，0.8s内如果有移动，清除长按定时事件
                 if (rateTimer) {
                     clearTimeout(rateTimer);
@@ -531,7 +549,7 @@
                     if (btns.length === 0) {
                         btn = document.createElement("div");
                         btn.style.cssText = sharedCSS + "position:absolute;width:40px;padding:2px;font-size:14px;font-weight:bold;" +
-                            "box-sizing:border-box;border:1px solid white;white-space:normal;";
+                            "box-sizing:border-box;border:1px solid white;white-space:normal;line-height:normal;";
                         btn.innerText = "点我\n全屏";
                         //设置id是为了防止多次点击重复添加
                         btn.className = "me-fullscreen-btn";
