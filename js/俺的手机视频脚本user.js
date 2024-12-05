@@ -11,7 +11,7 @@
 // @description:ja      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
 // @description:ko      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
 // @description:ru      Full-screen landscape, fast-forward and rewind, long-press for speed adjustment. Designed for Kiwi and Lemur browsers.
-// @version      1.8.4
+// @version      1.8.5
 // @author       shopkeeperV
 // @namespace    https://greasyfork.org/zh-CN/users/150069
 // @match        *://*/*
@@ -19,7 +19,6 @@
 // @grant        GM_getValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_registerMenuCommand
-// @grant        window.onurlchange
 // @downloadURL https://update.greasyfork.org/scripts/456542/%E4%BF%BA%E7%9A%84%E6%89%8B%E6%9C%BA%E8%A7%86%E9%A2%91%E8%84%9A%E6%9C%AC.user.js
 // @updateURL https://update.greasyfork.org/scripts/456542/%E4%BF%BA%E7%9A%84%E6%89%8B%E6%9C%BA%E8%A7%86%E9%A2%91%E8%84%9A%E6%9C%AC.meta.js
 // ==/UserScript==
@@ -27,10 +26,11 @@
 (function () {
     'use strict';
     let mutationTimer;
-    let mutationHandler = function () {
-        //不用判断是新增节点还是删除节点，或者是什么节点，因为都得遍历，徒增功耗
+    //getElementsByTagName、getElementsByClassName获取的集合是实时更新的，不需要重新获取，保留引用以提升性能
+    let videos = document.getElementsByTagName("video");
+    let iframes = document.getElementsByTagName("iframe");
+    let makeVideoAndIframeReady = function () {
         //去除未使用框架的视频的原生全屏按钮
-        let videos = document.getElementsByTagName("video");
         for (let video of videos) {
             if (video.controls) {
                 video.controlsList = ["nofullscreen"];
@@ -38,45 +38,64 @@
             }
         }
         //放开iframe全屏
-        let iframes = document.getElementsByTagName("iframe");
         for (let iframe of iframes) {
             iframe.allowFullscreen = true;
         }
     }
-    mutationHandler();
-    //观察页面变化，为新增的视频和iframe做好相应准备
-    new MutationObserver(() => {
-        if (mutationTimer) {
-            clearTimeout(mutationTimer);
-            console.log("俺的手机视频脚本：清除定时任务。");
+    let mutationHandler = function (mutationsList) {
+        for (let mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                for (let node of mutation.addedNodes) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.tagName.toLowerCase() === 'video' || node.tagName.toLowerCase() === 'iframe') {
+                            let _window = `${top === window ? "top" : "iframe"}>${location.host}`;
+                            if (mutationTimer) {
+                                clearTimeout(mutationTimer);
+                                console.log(`俺的手机视频脚本：${_window}清除定时任务。`);
+                            }
+                            mutationTimer = setTimeout(() => {
+                                mutationTimer = 0;
+                                makeVideoAndIframeReady();
+                                console.log(`俺的手机视频脚本：${_window}处理完成。`);
+                            }, 1000);
+                            console.log(`俺的手机视频脚本：${_window}页面新增了一个${node.tagName.toLowerCase()}，1秒后处理。`);
+                            return;
+                        }
+                    }
+                }
+            }
         }
-        mutationTimer = setTimeout(()=>{
-            mutationTimer = 0;
-            mutationHandler();
-        }, 1000);
-        console.log("俺的手机视频脚本：观察到页面变化，1秒后处理视频和iframe。");
-    }).observe(document.body, {childList: true, subtree: true});
+    }
+    makeVideoAndIframeReady();
+    //观察页面变化，为新增的视频和iframe做好相应准备
+    new MutationObserver(mutationHandler).observe(document.body, {childList: true, subtree: true});
     //部分网站阻止视频操作层触摸事件传播，需要指定监听目标，默认是document
     //注意，对少数iframe内视频，广告插件或使此脚本不起作用
     let listenTarget = document;
     //youtube使用无刷新网页，需要监听地址变化重新监听操控层
     if (window.location.host === "m.youtube.com") {
+        //特定的视频操控层，常规视频页面
+        let listenTargetArray = document.getElementsByClassName("player-controls-background");
+        //短视频页面
+        let shortListenTargetArray = document.getElementsByClassName("reel-player-overlay-main-content");
         let refresh = function () {
             console.log("俺的手机视频脚本：页面刷新...");
             //youtube视频在脚本执行时还没加载，需要个定时器循环获取状态
-            if (window.location.href.search("watch") >= 0) {
+            if (window.location.href.search("\/(watch|shorts)") >= 0) {
                 let waitForVideo = function () {
                     console.log("俺的手机视频脚本：正在获取视频...");
-                    //特定的视频操控层
-                    let videos = document.getElementsByTagName("video");
-                    let listenTargetArray = document.getElementsByClassName("player-controls-background");
-                    if (videos.length > 0) {
+                    if (videos.length > 0 && (listenTargetArray.length > 0 || shortListenTargetArray.length > 0)) {
                         let video = videos[0];
                         //非静音播放中
                         if (video.readyState > 1 && !video.paused && !video.muted) {
-                            listenTarget = listenTargetArray[0];
-                            //防止重复添加
+                            if (window.location.href.includes("watch")) {
+                                listenTarget = listenTargetArray[0];
+                            } else {
+                                listenTarget = shortListenTargetArray[0];
+                            }
+                            //防止重复添加，在获取视频期间再次触发onurlchangge就会重复添加
                             if (listenTarget.getAttribute("me_video_js")) {
+                                console.log("俺的手机视频脚本：防止重复添加。");
                                 return;
                             }
                             listenTarget.setAttribute("me_video_js", "me_video_js");
@@ -92,24 +111,28 @@
             }
         };
         refresh();
-        //考虑到有chrome和tampermonkey以外的用户，也适配不支持window.onurlchange的浏览器
-        if (/xmonkey|tampermonkey/i.test(GM_info.scriptHandler)) {
-            window.addEventListener("urlchange", refresh);
-        } else {
-            const originalPushState = history.pushState;
-            const originalReplaceState = history.replaceState;
-            history.pushState = function (state) {
-                originalPushState.apply(history, arguments);
-                console.log("监听到地址变化。pushState()调用。");
+        //2024/12/4发现onurlchange在lemur2.7.0.035(127.0.6533.144)不能正常使用
+        //测试edge131.0.2903.70开发工具模拟移动设备使用正常
+        /*if (/xmonkey|tampermonkey/i.test(GM_info.scriptHandler)) {
+            window.addEventListener("urlchange", () => {
                 //太快的话原视频还没移除，会判断操控层已监听，不再等待新视频加载
+                //不同浏览器的执行时机不一样，lemur就不需要
                 setTimeout(refresh, 500);
-            };
-            history.replaceState = function (state) {
-                originalReplaceState.apply(history, arguments);
-                console.log("监听到地址变化，replaceState()调用。");
-                setTimeout(refresh, 500);
-            };
-        }
+            });
+        } else {*/
+        const originalPushState = history.pushState;
+        const originalReplaceState = history.replaceState;
+        history.pushState = function (state) {
+            originalPushState.apply(history, arguments);
+            console.log("监听到地址变化。pushState()调用。");
+            setTimeout(refresh, 500);
+        };
+        history.replaceState = function (state) {
+            originalReplaceState.apply(history, arguments);
+            console.log("监听到地址变化，replaceState()调用。");
+            setTimeout(refresh, 500);
+        };
+        // }
     }
     //通用
     listen();
